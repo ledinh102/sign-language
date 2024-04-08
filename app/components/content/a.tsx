@@ -22,69 +22,6 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
   const router = useRouter()
   const webcamRef = useRef<Webcam | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
-  // const createSuggestText = async () => {
-  // if (url) {
-  //   const res = await fetch(url, {
-  //     method: 'POST',
-  //     headers: {
-  //       'content-type': 'application/x-www-form-urlencoded',
-  //       'X-RapidAPI-Key': process.env.NEXT_PUBLIC_SUGGEST_KEY!,
-  //       'X-RapidAPI-Host': 'textgears-textgears-v1.p.rapidapi.com'
-  //     },
-  //     body: new URLSearchParams({
-  //       text: decodeURIComponent(query)
-  //     })
-  //   })
-  //   const result = await res.text()
-  //   const result = {
-  //     response: {
-  //       errors: [
-  //         {
-  //           bad: 'is',
-  //           better: ['am'],
-  //           description: {
-  //             en: 'Did you mean "am"?'
-  //           },
-  //           id: 'e1538460279',
-  //           length: 2,
-  //           offset: 2,
-  //           type: 'grammar'
-  //         },
-  //         {
-  //           bad: 'engeneer',
-  //           better: ['engineer', 'engender'],
-  //           description: {
-  //             en: 'Possible spelling mistake found'
-  //           },
-  //           id: 'e409777493',
-  //           length: 8,
-  //           offset: 8,
-  //           type: 'spelling'
-  //         }
-  //       ],
-  //       result: true
-  //     },
-  //     status: true
-  //   }
-
-  //   if (result.response.errors.length === 0) {
-  //     return
-  //   }
-  //   let newText = 'My mother are a doctor, but my father is a angeneer. I has a gun.'
-  //   console.log(newText)
-  //   setSuggest(newText)
-  // }
-
-  // useEffect(() => {
-  //   const { search } = window.location
-  //   if (search != '') {
-  //     const query = search.split('=')[1]
-  //     setText(decodeURIComponent(query))
-  //   }
-  //   ;(async function () {
-  //     await createSuggestText()
-  //   })()
-  // }, [])
 
   const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const newText = e.target.value
@@ -145,11 +82,12 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
     }
   }, [webcamRef, displayPhoto])
 
+  // setTimeout(capture, 5000)
   useEffect(() => {
-    const interval = setInterval(capture, 500)
+    // Thực hiện chụp và gửi ảnh đến server mỗi 5 giây
+    const interval = setInterval(capture, 5000)
     return () => clearInterval(interval)
-  })
-
+  }, [])
   return (
     <Stack direction='row' spacing={1.5}>
       <Box
@@ -225,7 +163,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
             overflow: 'hidden'
           }}
         >
-          {imgSrc ? <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' /> : null}
+          {imgSrc ? <Image className='imgResult' src={imgSrc!} fill={true} alt='Picture of the author' /> : null}
           <pose-viewer
             loop
             src={

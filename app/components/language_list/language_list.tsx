@@ -4,10 +4,13 @@ import { TabContext, TabList } from '@mui/lab'
 import { Box, IconButton, Stack, Tab } from '@mui/material'
 import { useState } from 'react'
 import styles from './language_list.module.scss'
+import Link from 'next/link'
 
-export interface LanguageListProps {}
+export interface LanguageListProps {
+  isRevert: boolean
+}
 
-export default function LanguageList(props: LanguageListProps) {
+export default function LanguageList({ isRevert }: LanguageListProps) {
   const [value, setValue] = useState('1')
   const [expanded, setExpanded] = useState(false)
 
@@ -19,7 +22,7 @@ export default function LanguageList(props: LanguageListProps) {
   }
 
   return (
-    <Stack direction='row' alignItems='center' mt={1.5} mx={1.5}>
+    <Stack direction={isRevert ? 'row-reverse' : 'row'} alignItems='center' mt={1.5} mx={1.5}>
       <Box flex='1'>
         <TabContext value={value}>
           <Box sx={{ display: 'inline-block' }}>
@@ -34,12 +37,14 @@ export default function LanguageList(props: LanguageListProps) {
         </TabContext>
       </Box>
       <Box>
-        <IconButton>
-          <SwapHorizRounded />
-        </IconButton>
+        <Link href={isRevert ? '/' : '/sign-to-text'}>
+          <IconButton>
+            <SwapHorizRounded />
+          </IconButton>
+        </Link>
       </Box>
       <Box flex='1'>
-        <TabContext value={'1'}>
+        <TabContext value='1'>
           <Box>
             <TabList onChange={handleChange}>
               <Tab label='Sign language' value='1' />

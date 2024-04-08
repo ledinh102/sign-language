@@ -16,10 +16,13 @@
     "@mui/lab": "^5.0.0-alpha.169",
     "@mui/material": "^5.15.14",
     "@mui/material-nextjs": "^5.15.11",
+    "@vitalets/google-translate-api": "^9.2.0",
+    "google-translate-api-browser": "^5.0.0",
     "next": "14.1.4",
     "pose-viewer": "^0.7.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-webcam": "^7.2.0",
     "use-debounce": "^10.0.0"
   },
   "devDependencies": {

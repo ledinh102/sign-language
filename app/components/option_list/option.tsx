@@ -1,15 +1,19 @@
+'use client'
 import { Button } from '@mui/material'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import colors from '../../constants.module.scss'
 
 export interface OptionProps {
   text: string
   icon: ReactNode
+  toggleWebcam: () => void
 }
 
-export default function Option({ text, icon }: OptionProps) {
+export default function Option({ text, icon, toggleWebcam }: OptionProps) {
+  const [isOpenCam, setIsOpenCam] = useState(false)
+
   return (
-    <Button startIcon={icon} variant='outlined' sx={{ background: colors.primaryColorActive }}>
+    <Button onClick={toggleWebcam} startIcon={icon} variant='outlined' sx={{ background: colors.primaryColorActive }}>
       {text}
     </Button>
   )

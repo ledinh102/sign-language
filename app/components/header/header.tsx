@@ -14,7 +14,7 @@ export default function Header() {
             </IconButton>
           </Box>
           <Box width='200px' height='40px' position='relative'>
-            <Image fill priority src='/logo.png' alt='logo' />
+            <Image fill priority src='/logo.png' sizes='10' alt='logo' />
           </Box>
         </Stack>
         <Stack direction='row' alignItems='center' spacing={1} mr={1.5}>

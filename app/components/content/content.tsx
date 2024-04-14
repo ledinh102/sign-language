@@ -4,7 +4,7 @@ import { dataURLtoFile } from '@/lib/utils'
 import { Box, Stack, TextField } from '@mui/material'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, createElement, useCallback, useEffect, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
 import { useDebounce } from 'use-debounce'
 import Micro from '../micro/micro'
@@ -156,6 +156,14 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
               src={`https://us-central1-sign-mt.cloudfunctions.net/spoken_text_to_signed_pose?text=${query}&spoken=en&signed=ase`}
             />
           )} */}
+          {query && (
+            <>
+              {createElement('pose-viewer', {
+                loop: true,
+                src: `https://us-central1-sign-mt.cloudfunctions.net/spoken_text_to_signed_pose?text=${query}&spoken=en&signed=ase`
+              })}
+            </>
+          )}
         </Box>
       </Box>
     </Stack>

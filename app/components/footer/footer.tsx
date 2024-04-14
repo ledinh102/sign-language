@@ -21,7 +21,6 @@ export default function Footer(props: FooterProps) {
         value={value}
         onChange={(event, newValue) => {
           setValue(newValue)
-          console.log(newValue)
           if (newValue === 0) {
             router.push('/')
           } else if (newValue === 1) {

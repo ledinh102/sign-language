@@ -1,11 +1,13 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Container } from '@mui/material'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter'
 import { ThemeProvider } from '@mui/material/styles'
-import theme from './theme'
-import './globals.scss'
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import AuthProviders from './auth/auth-providers'
+import Footer from './components/footer/footer'
 import Header from './components/header/header'
-import { Container } from '@mui/material'
+import './globals.scss'
+import theme from './theme'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,15 +24,19 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <head>
+        <title>DnD Translate</title>
         <script src='https://unpkg.com/pose-viewer@latest/dist/pose-viewer/pose-viewer.esm.js' type='module' async />
       </head>
       <body className={inter.className}>
         <ThemeProvider theme={theme}>
           <AppRouterCacheProvider>
-            <Header />
-            <Container maxWidth='lg' sx={{ mt: 1.5 }}>
-              {children}
-            </Container>
+            <AuthProviders>
+              <Header />
+              <Container maxWidth='lg' sx={{ mt: 1.5 }}>
+                {children}
+              </Container>
+              <Footer />
+            </AuthProviders>
           </AppRouterCacheProvider>
         </ThemeProvider>
       </body>

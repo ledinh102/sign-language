@@ -150,12 +150,12 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
           }}
         >
           {imgSrc ? <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' /> : null}
-          {query && (
+          {/* {query && (
             <pose-viewer
               loop
               src={`https://us-central1-sign-mt.cloudfunctions.net/spoken_text_to_signed_pose?text=${query}&spoken=en&signed=ase`}
             />
-          )}
+          )} */}
         </Box>
       </Box>
     </Stack>

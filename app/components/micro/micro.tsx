@@ -1,18 +1,19 @@
-import { MicNoneRounded } from '@mui/icons-material'
+import { MicNoneRounded, GraphicEqRounded } from '@mui/icons-material'
 import { IconButton, Typography } from '@mui/material'
 
 export interface MicroProps {
   isRevert: boolean
   text: string
+  isListening: boolean
   startStopListening: () => void
 }
 
-export default function Micro({ text, isRevert, startStopListening }: MicroProps) {
+export default function MicroAndCountText({ text, isRevert, isListening, startStopListening }: MicroProps) {
   if (isRevert) return
   return (
     <>
       <IconButton sx={{ position: 'absolute', bottom: 4, left: 4 }} onClick={() => startStopListening()}>
-        <MicNoneRounded />
+        {isListening ? <GraphicEqRounded /> : <MicNoneRounded />}
       </IconButton>
       <Typography
         component='span'

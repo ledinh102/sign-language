@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { ChangeEvent, createElement, useCallback, useEffect, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
 import { useDebounce } from 'use-debounce'
-import Micro from '../micro/micro'
+import MicroAndCountText from '../micro/micro'
 import styles from './content.module.scss'
 
 export interface ContentProps {
@@ -127,7 +127,12 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
             onChange={handleTextChange}
           />
         )}
-        <Micro text={text + transcript} isRevert={isRevert} startStopListening={startStopListening} />
+        <MicroAndCountText
+          text={text + transcript}
+          isRevert={isRevert}
+          isListening={isListening}
+          startStopListening={startStopListening}
+        />
       </Box>
       <Box
         sx={{

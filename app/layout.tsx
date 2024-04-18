@@ -32,7 +32,7 @@ export default function RootLayout({
           <AppRouterCacheProvider>
             <AuthProviders>
               <Header />
-              <Container maxWidth='lg' sx={{ mt: 1.5 }}>
+              <Container maxWidth='lg' sx={{ mt: 1.5, mb: 6 }}>
                 {children}
               </Container>
               <Footer />

@@ -1,5 +1,9 @@
 @import './reset.scss';
 
+* {
+  box-sizing: border-box;
+}
+
 pose-viewer.hydrated {
   max-height: 400px;
 }

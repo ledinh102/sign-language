@@ -16,12 +16,16 @@ export interface ContentProps {
 }
 
 export default function Content({ isRevert, isWebcamOn }: ContentProps) {
-  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: true })
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: false })
   const [text, setText] = useState('')
   const [query] = useDebounce(encodeURIComponent(text), 1000)
   const router = useRouter()
   const webcamRef = useRef<Webcam | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
+
+  useEffect(() => {
+    setText(transcript)
+  }, [transcript])
 
   const startStopListening = () => {
     isListening ? stopVoice() : startListening()
@@ -115,9 +119,9 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
             rows={14}
             fullWidth
             defaultValue={text}
-            // value={text}
             disabled={isListening}
-            value={isListening ? text + (transcript.length ? (text.length ? ' ' : '') + transcript : '') : text}
+            // value={isListening ? text + (transcript.length ? (text.length ? ' ' : '') + transcript : '') : text}
+            value={text}
             InputProps={{
               sx: {
                 borderRadius: '12px',
@@ -128,7 +132,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
           />
         )}
         <MicroAndCountText
-          text={text + transcript}
+          text={text}
           isRevert={isRevert}
           isListening={isListening}
           startStopListening={startStopListening}
@@ -155,20 +159,11 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
           }}
         >
           {imgSrc ? <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' /> : null}
-          {/* {query && (
-            <pose-viewer
-              loop
-              src={`https://us-central1-sign-mt.cloudfunctions.net/spoken_text_to_signed_pose?text=${query}&spoken=en&signed=ase`}
-            />
-          )} */}
-          {query && (
-            <>
-              {createElement('pose-viewer', {
-                loop: true,
-                src: `https://us-central1-sign-mt.cloudfunctions.net/spoken_text_to_signed_pose?text=${query}&spoken=en&signed=ase`
-              })}
-            </>
-          )}
+          {query &&
+            createElement('pose-viewer', {
+              loop: true,
+              src: `https://us-central1-sign-mt.cloudfunctions.net/spoken_text_to_signed_pose?text=${query}&spoken=en&signed=ase`
+            })}
         </Box>
       </Box>
     </Stack>

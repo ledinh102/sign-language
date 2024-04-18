@@ -39,7 +39,10 @@ export default function Videos(props: { channelName: string; AppID: string }) {
     // check user type
     const userType = searchParams.get('user')
     console.log('check user: ', userType === 'dd')
-    if (userType === 'dd') startListening()
+    if (userType === 'dd') {
+      setMic(false)
+      startListening()
+    }
   }, [])
 
   usePublish([localMicrophoneTrack, localCameraTrack])

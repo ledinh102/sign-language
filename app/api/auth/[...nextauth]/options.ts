@@ -1,6 +1,6 @@
 import type { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
-import GitHubProvider from 'next-auth/providers/github'
+import { GoogleProfile } from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { db } from '@/lib/db'
@@ -8,14 +8,23 @@ import { compare } from 'bcrypt'
 
 export const options: NextAuthOptions = {
   adapter: PrismaAdapter(db),
+  pages: {
+    newUser: '/auth/sign-up',
+    signIn: '/auth/sign-in'
+  },
   providers: [
     GoogleProvider({
-      clientId: process.env.PUBLIC_CLIENT_ID as string,
-      clientSecret: process.env.PUBLIC_CLIENT_SECRET as string
-    }),
-    GitHubProvider({
-      clientId: process.env.PUBLIC_GITHUB_ID as string,
-      clientSecret: process.env.PUBLIC_GITHUB_SECRET as string
+      profile(profile: GoogleProfile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: profile.role ?? 'user'
+        }
+      },
+      clientId: process.env.PUBLIC_CLIENT_ID!,
+      clientSecret: process.env.PUBLIC_CLIENT_SECRET!
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -23,28 +32,65 @@ export const options: NextAuthOptions = {
         email: { label: 'Email', type: 'email', placeholder: 'example@gmail.com' },
         password: { label: 'Password', type: 'password' }
       },
+
       async authorize(credentials, req) {
+        console.log(credentials)
         if (!credentials?.email || !credentials?.password) {
           return null
         }
-
         const existUser = await db.user.findUnique({
           where: { email: credentials?.email }
         })
 
         if (!existUser) return null
 
-        const passwordMatch = await compare(credentials.password, existUser.password)
+        if (existUser.password) {
+          console.log(existUser)
+          const passwordMatch = await compare(credentials.password, existUser.password)
+          if (!passwordMatch) {
+            return null
+          }
+        }
 
-        if (!passwordMatch) return null
-
-        const { password, ...rest } = existUser
-        return rest
+        return {
+          id: existUser.id,
+          name: existUser.name ?? null,
+          email: existUser.email,
+          emailVerified: existUser.emailVerified ?? null,
+          role: existUser.role ?? 'user',
+          image: existUser.image ?? null,
+          createdAt: existUser.createdAt,
+          updatedAt: existUser.updatedAt
+        }
       }
     })
   ],
   session: {
     strategy: 'jwt'
   },
-  secret: process.env.PUBLIC_NEXTAUTH_SECRET
+  logger: {
+    error(code, metadata) {
+      console.error(code, metadata)
+    },
+    warn(code) {
+      console.warn(code)
+    },
+    debug(code, metadata) {
+      console.debug(code, metadata)
+    }
+  },
+  callbacks: {
+    async redirect({ url, baseUrl }) {
+      return baseUrl
+    },
+    jwt({ token, user }) {
+      if (user) token.role = user.role
+      return token
+    },
+    session({ session, token }) {
+      session.user.role = token.role
+      return session
+    }
+  },
+  secret: process.env.NEXTAUTH_SECRET
 }

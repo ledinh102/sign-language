@@ -1,16 +1,21 @@
 'use client'
 import { AppsRounded, MenuRounded, SettingsOutlined } from '@mui/icons-material'
-import { Avatar, Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material'
-import { blue } from '@mui/material/colors'
+import { Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { toast } from 'react-toastify'
 
 export default function Header() {
-  const { data: session } = useSession()
-  console.log(session)
+  const { data } = useSession()
+
+  // useEffect(() => {
+  //   if (data?.user?.name) toast.success('Sign in successfully')
+  // }, [data?.user?.name])
+
   return (
-    <Box>
+    <Box position='fixed' width='100%' zIndex={1000} top={0}>
       <Stack direction='row' px={1.5} py={1.5} justifyContent='space-between'>
         <Stack direction='row' alignItems='center'>
           <Box>
@@ -18,9 +23,9 @@ export default function Header() {
               <MenuRounded />
             </IconButton>
           </Box>
-          <Box width='200px' height='40px' position='relative'>
+          <Box>
             <Link href='/' prefetch={true}>
-              <Image fill priority src='/logo.png' sizes='10' alt='logo' />
+              <Image width={200} height={40} priority src='/logo.png' style={{ objectFit: 'contain' }} alt='logo' />
             </Link>
           </Box>
         </Stack>
@@ -35,10 +40,10 @@ export default function Header() {
               <AppsRounded />
             </IconButton>
           </Box>
-          {session?.user ? (
+          {data?.user ? (
             <Stack direction='row' alignItems='center' spacing={2}>
-              <Typography component='p'>{'Hello, ' + session.user.name}</Typography>
-              <Button variant='contained' color='error' onClick={() => signOut({ callbackUrl: '/', redirect: false })}>
+              <Typography component='p'>{'Hello, ' + data.user.name}</Typography>
+              <Button variant='contained' color='error' href='/api/auth/signout'>
                 Signout
               </Button>
             </Stack>

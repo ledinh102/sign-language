@@ -1,4 +1,6 @@
 'use client'
+import useSpeechToText from '@/hooks/useSpeechToText'
+import { MicNoneRounded, MicOffRounded, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
 import { Box, Button, Card, IconButton, Stack } from '@mui/material'
 import {
   LocalUser,
@@ -10,58 +12,72 @@ import {
   useRemoteAudioTracks,
   useRemoteUsers
 } from 'agora-rtc-react'
-
-import useSpeechToText from '@/hooks/useSpeechToText'
-import { MicNoneRounded, MicOffRounded, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createElement, useEffect, useState } from 'react'
 import { useDebounce } from 'use-debounce'
 
 export default function Videos(props: { channelName: string; AppID: string }) {
   const router = useRouter()
+  const userType = useSearchParams().get('user')
   const { AppID, channelName } = props
-  const searchParams = useSearchParams()
-  const [micOn, setMic] = useState(true)
+  const [micOn, setMic] = useState(userType === 'dd' ? false : true)
   const [cameraOn, setCamera] = useState(true)
-  const [activeConnection, setActiveConnection] = useState(true)
   const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(micOn)
   const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack(cameraOn)
   const remoteUsers = useRemoteUsers()
   const { audioTracks } = useRemoteAudioTracks(remoteUsers)
+  const [ws, setWs] = useState<WebSocket | null>(null)
+  const [query, setQuery] = useState('')
 
   const { isListening, transcript, startListening, stopListening } = useSpeechToText({
     lang: 'en',
     continuous: true
   })
 
-  const [query] = useDebounce(encodeURIComponent(transcript), 2000)
+  const [text] = useDebounce(transcript, 2000)
+
   useEffect(() => {
-    // check user type
-    const userType = searchParams.get('user')
-    console.log('check user: ', userType === 'dd')
-    if (userType === 'dd') {
-      setMic(false)
-      startListening()
-    }
+    console.log('userType: ', userType)
+    console.log('check condition: ', userType === null && micOn)
+    if (userType === null && micOn) startListening()
   }, [])
 
+  // Establish websocket connection
+  useEffect(() => {
+    const clientID = Date.now()
+    const socket = new WebSocket(`ws://localhost:8000/video-call/${clientID}`)
+    setWs(socket)
+
+    socket.onmessage = function (event) {
+      console.log('query: ', event.data)
+      setQuery(encodeURIComponent(event.data))
+    }
+
+    // Clean up function
+    return () => {
+      socket.close()
+    }
+  }, [channelName])
+
+  // Send query data over websocket when it changes
+  useEffect(() => {
+    if (ws && text) {
+      ws.send(text)
+    }
+  }, [ws, text])
+
+  // Join Agora RTC channel
   usePublish([localMicrophoneTrack, localCameraTrack])
-  useJoin(
-    {
-      appid: AppID,
-      channel: channelName,
-      token: null
-    },
-    activeConnection
-  )
+  useJoin({ appid: AppID, channel: channelName, token: null })
 
   audioTracks.map(track => track.play())
   const deviceLoading = isLoadingMic || isLoadingCam
-  if (deviceLoading) return <div className='flex flex-col items-center pt-40'>Loading devices...</div>
+  if (deviceLoading) return <div>Loading devices...</div>
+
   return (
-    <Box width='800px' mx='auto' position='relative'>
+    <Box width='780px' mx='auto' position='relative'>
       <Card sx={{ width: '100%', aspectRatio: 4 / 3 }}>
-        {query && (
+        {userType === 'dd' && query && (
           <Card sx={{ position: 'absolute', zIndex: 5, width: '200px', left: 20, top: 20 }}>
             {createElement('pose-viewer', {
               loop: true,
@@ -69,7 +85,13 @@ export default function Videos(props: { channelName: string; AppID: string }) {
             })}
           </Card>
         )}
-        <Card sx={{ position: 'absolute', zIndex: 5, width: '200px', aspectRatio: 4 / 3, right: 20, top: 20 }}>
+        <Card
+          sx={
+            remoteUsers.length === 1
+              ? { position: 'absolute', zIndex: 5, width: '200px', aspectRatio: 4 / 3, right: 20, top: 20 }
+              : { height: '100%' }
+          }
+        >
           <LocalUser
             audioTrack={localMicrophoneTrack}
             videoTrack={localCameraTrack}
@@ -112,7 +134,6 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           variant='contained'
           color='error'
           onClick={() => {
-            setActiveConnection(false)
             router.push('/video-call')
           }}
         >

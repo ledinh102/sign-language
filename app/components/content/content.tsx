@@ -3,7 +3,7 @@ import useSpeechToText from '@/hooks/useSpeechToText'
 import { dataURLtoFile } from '@/lib/utils'
 import { Box, Stack, TextField } from '@mui/material'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ChangeEvent, createElement, useCallback, useEffect, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
 import { useDebounce } from 'use-debounce'
@@ -16,19 +16,70 @@ export interface ContentProps {
 }
 
 export default function Content({ isRevert, isWebcamOn }: ContentProps) {
-  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: false })
-  const [text, setText] = useState('')
-  const [query] = useDebounce(encodeURIComponent(text), 1000)
   const router = useRouter()
+  const params = useSearchParams()
+  let langParam = params.get('lang')
+  let textParam = params.get('text')
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({
+    continuous: false,
+    lang: langParam === 'en' ? 'en' : 'vi'
+  })
+  const [text, setText] = useState('')
+  const [debounceText] = useDebounce(text, 1000)
+  const [query, setQuery] = useState('')
   const webcamRef = useRef<Webcam | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
 
   useEffect(() => {
     setText(transcript)
+    if (transcript) router.push(`?lang=${langParam}&text=${transcript}`)
   }, [transcript])
 
+  useEffect(() => {
+    setQuery(encodeURIComponent(debounceText))
+  }, [debounceText])
+
+  useEffect(() => {
+    if (textParam) setText(decodeURIComponent(textParam))
+  }, [])
+
+  useEffect(() => {
+    if (langParam === 'vi' && debounceText) {
+      const url =
+        'https://microsoft-translator-text.p.rapidapi.com/translate?to%5B0%5D=en&api-version=3.0&from=vi&profanityAction=NoAction&textType=plain'
+      const options = {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'X-RapidAPI-Key': process.env.NEXT_PUBLIC_RAPIDAPI_KEY!,
+          'X-RapidAPI-Host': process.env.NEXT_PUBLIC_RAPIDAPI_HOST!
+        },
+        body: JSON.stringify([
+          {
+            Text: `${debounceText}`
+          }
+        ])
+      }
+
+      ;(async () => {
+        try {
+          const response = await fetch(url, options)
+          const result = await response.json()
+          console.log(result[0].translations[0].text)
+          setQuery(encodeURIComponent(result[0].translations[0].text))
+        } catch (error) {
+          console.error(error)
+        }
+      })()
+    }
+  }, [debounceText, langParam])
+
   const startStopListening = () => {
-    isListening ? stopVoice() : startListening()
+    if (isListening) stopVoice()
+    else {
+      setText('')
+      startListening()
+    }
   }
 
   const stopVoice = () => {
@@ -43,7 +94,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
     const newText = e.target.value
     if (newText.length <= 500) {
       setText(newText)
-      router.push(newText ? `/?text=${encodeURIComponent(newText)}` : '/')
+      router.push(newText ? `/?lang=${langParam}&text=${encodeURIComponent(newText)}` : `/?lang=${langParam}`)
     }
   }
 
@@ -118,9 +169,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
             multiline
             rows={14}
             fullWidth
-            defaultValue={text}
             disabled={isListening}
-            // value={isListening ? text + (transcript.length ? (text.length ? ' ' : '') + transcript : '') : text}
             value={text}
             InputProps={{
               sx: {
@@ -158,7 +207,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
             overflow: 'hidden'
           }}
         >
-          {imgSrc ? <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' /> : null}
+          {imgSrc && <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' />}
           {query &&
             createElement('pose-viewer', {
               loop: true,

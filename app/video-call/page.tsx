@@ -11,13 +11,15 @@ import {
   TextField,
   Typography
 } from '@mui/material'
-import { useRouter } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 export default function VideoCall() {
   const [channel, setChannel] = useState('')
   const [user, setUser] = useState('normal')
   const router = useRouter()
+  const { status } = useSession()
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUser(event.target.value)
@@ -26,6 +28,14 @@ export default function VideoCall() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     router.push(`/video-call/channel/${channel}${user === 'deaf-dumb' ? '/?user=dd' : ''}`)
+  }
+
+  if (status === 'loading') {
+    return <div>Loading...</div>
+  }
+
+  if (status === 'unauthenticated') {
+    return redirect('/auth/sign-in')
   }
 
   return (

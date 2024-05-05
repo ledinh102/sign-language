@@ -1,0 +1,7 @@
+.message {
+  &:hover {
+    .deleteIcon {
+      display: inline-flex;
+    }
+  }
+}

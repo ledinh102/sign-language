@@ -2,9 +2,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { GitHub, Google } from '@mui/icons-material'
 import { Box, Button, Divider, Paper, Stack, TextField, Typography } from '@mui/material'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import styles from '../auth.module.scss'
@@ -19,6 +19,7 @@ type FormFields = z.infer<typeof formSchema>
 
 export default function SignUpPage() {
   const router = useRouter()
+  const { status } = useSession()
 
   const {
     register,
@@ -36,8 +37,7 @@ export default function SignUpPage() {
   const onSubmit: SubmitHandler<FormFields> = async data => {
     const signInData = await signIn('credentials', {
       email: data.email,
-      password: data.password,
-      redirect: false
+      password: data.password
     })
     if (signInData?.error) {
       console.log(signInData.error)
@@ -47,6 +47,15 @@ export default function SignUpPage() {
       router.refresh()
     }
   }
+
+  if (status === 'loading') {
+    return <div>Loading...</div>
+  }
+
+  if (status === 'authenticated') {
+    return redirect('/')
+  }
+
   return (
     <Box height='70vh'>
       <Stack sx={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>

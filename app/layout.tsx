@@ -35,7 +35,7 @@ export default function RootLayout({
           <AppRouterCacheProvider>
             <AuthProviders>
               <Header />
-              <Container maxWidth='lg' sx={{ pt: 10 }}>
+              <Container maxWidth='lg' sx={{ mt: '71px' }}>
                 <ToastContainer
                   position='bottom-left'
                   autoClose={4000}

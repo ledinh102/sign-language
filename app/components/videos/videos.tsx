@@ -52,11 +52,6 @@ export default function Videos(props: { channelName: string; AppID: string }) {
       console.log('query: ', event.data)
       setQuery(encodeURIComponent(event.data))
     }
-
-    // Clean up function
-    return () => {
-      socket.close()
-    }
   }, [channelName])
 
   // Send query data over websocket when it changes

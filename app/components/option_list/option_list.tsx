@@ -9,7 +9,7 @@ export interface OptionListProps {
 
 export default function OptionList({ isRevert, toggleWebcam }: OptionListProps) {
   return (
-    <Box>
+    <Box pt={2}>
       <Option
         toggleWebcam={toggleWebcam!}
         text={isRevert ? 'Webcam' : 'Text'}

@@ -1,39 +1,24 @@
 'use client'
-import {
-  Avatar,
-  Box,
-  Button,
-  Divider,
-  Grid,
-  LinearProgress,
-  OutlinedInput,
-  Stack,
-  TextField,
-  Typography
-} from '@mui/material'
-import { MouseEvent, ReactNode, useEffect, useRef, useState } from 'react'
+import { Box, Divider, Grid, LinearProgress, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { PersonRounded, SearchRounded } from '@mui/icons-material'
+import { redirect, useRouter } from 'next/navigation'
+import { ReactNode, useEffect, useState } from 'react'
 import UserCard from '../components/card/userCard'
-import { Conversation, Message, User } from '@prisma/client'
-import { redirect, useRouter, useSearchParams } from 'next/navigation'
-import { ConversationCustom } from '../model'
 import SearchUsers from '../components/search/searchUser'
-import MessageList from '../components/messages/messages'
+import { ConversationCustom } from '../model'
 
 export default function LayoutChat({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession()
   const [conversationList, setConversationList] = useState<ConversationCustom[]>([])
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const getConversationList = async (userId: string) => {
     setLoading(true)
     try {
       const response = await fetch(`http://127.0.0.1:8000/${userId}/conversations`)
       const conversationList: ConversationCustom[] = await response.json()
-      if (conversationList.length > 0 && searchParams.get('currentChat') === null) {
+      if (conversationList.length > 0) {
         router.push('/chat/' + conversationList[0].id)
       }
       setConversationList(conversationList)

@@ -1,13 +1,13 @@
 'use client'
 import { ConversationCustom } from '@/app/model'
-import { DeleteRounded, SendRounded } from '@mui/icons-material'
-import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material'
+import { SendRounded } from '@mui/icons-material'
+import { Box, Button, Stack, TextField, Typography } from '@mui/material'
 import { Message } from '@prisma/client'
-import { useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import styles from './messages.module.scss'
 import DeleteBtn from './deleteBtn'
+import styles from './messages.module.scss'
 
 export interface MessageListProps {
   userId: string
@@ -21,7 +21,7 @@ export default function MessageList({ userId, conversation, getMessages, message
   const [content, setContent] = useState<string>('')
   const [ws, setWs] = useState<WebSocket | null>(null)
   const messagesRef = useRef<HTMLDivElement>(null)
-  const searchParams = useSearchParams()
+  const params = useParams<{ conversationId: string }>()
 
   const addMessage = async () => {
     if (content === '') {
@@ -47,21 +47,21 @@ export default function MessageList({ userId, conversation, getMessages, message
   }
 
   useEffect(() => {
-    if (userId && searchParams.get('currentChat')) {
+    if (userId) {
       const socket = new WebSocket(`ws://localhost:8000/chat/${userId}`)
       setWs(socket)
 
       socket.onmessage = event => {
         const message: Message = JSON.parse(event.data)
-        console.log('message:', message, searchParams.get('currentChat'), message.conversationId)
-        if (searchParams.get('currentChat') === message.conversationId) getMessages(message.conversationId)
+        console.log('message:', message, message.conversationId)
+        if (params.conversationId === message.conversationId) getMessages(message.conversationId)
       }
 
       return () => {
         if (socket.readyState === WebSocket.OPEN) socket.close()
       }
     }
-  }, [userId, searchParams.get('currentChat')])
+  }, [userId])
 
   useEffect(() => {
     if (messagesRef.current) {

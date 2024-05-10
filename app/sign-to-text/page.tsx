@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import OptionList from '../components/option_list/option_list'
 import LanguageList from '../components/language_list/language_list'
 import Content from '../components/content/content'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 export interface SignToTextProps {}
 
@@ -16,8 +16,12 @@ export default function SignToText(props: SignToTextProps) {
   return (
     <Box>
       <OptionList isRevert={isRevert} toggleWebcam={toggleWebcam} />
-      <LanguageList isRevert={isRevert} />
-      <Content isRevert={isRevert} isWebcamOn={isWebcamOn} />
+      <Suspense>
+        <LanguageList isRevert={isRevert} />
+      </Suspense>
+      <Suspense>
+        <Content isRevert={isRevert} isWebcamOn={isWebcamOn} />
+      </Suspense>
     </Box>
   )
 }

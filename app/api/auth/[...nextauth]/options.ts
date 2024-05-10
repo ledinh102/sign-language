@@ -96,5 +96,8 @@ export const options: NextAuthOptions = {
       return session
     }
   },
+  theme: {
+    colorScheme: 'light'
+  },
   secret: process.env.NEXTAUTH_SECRET
 }

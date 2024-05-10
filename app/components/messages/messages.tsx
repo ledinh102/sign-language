@@ -71,6 +71,7 @@ export default function MessageList({ userId, conversation, getMessages, message
   return (
     <Box
       ref={messagesRef}
+      className={styles.messageList}
       sx={{
         display: 'flex',
         flexDirection: 'column',

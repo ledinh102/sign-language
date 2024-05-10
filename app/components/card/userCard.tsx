@@ -1,5 +1,5 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 
 export interface UserCardProps {
   conversationId: string
@@ -9,7 +9,7 @@ export interface UserCardProps {
 }
 
 export default function UserCard({ conversationId, name, avatar, content }: UserCardProps) {
-  const searchParams = useSearchParams()
+  const params = useParams<{ conversationId: string }>()
   const router = useRouter()
 
   return (
@@ -17,12 +17,12 @@ export default function UserCard({ conversationId, name, avatar, content }: User
       sx={{
         p: 1,
         m: 1.5,
-        backgroundColor: conversationId === searchParams.get('currentChat') ? '#f0f0f0' : 'inherit',
+        backgroundColor: conversationId === params.conversationId ? '#f0f0f0' : 'inherit',
         borderRadius: '5px',
         cursor: 'pointer'
       }}
       onClick={() => {
-        router.push(`/chat/?currentChat=${conversationId}`)
+        router.push(`/chat/${conversationId}`)
       }}
     >
       <Stack direction='row' spacing={2} alignItems='center'>

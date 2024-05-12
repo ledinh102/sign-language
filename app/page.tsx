@@ -13,7 +13,7 @@ export default function Home() {
         <LanguageList isRevert={isRevert} />
       </Suspense>
       <Suspense>
-        <Content isRevert={isRevert} isWebcamOn={false} />
+        <Content isRevert={isRevert} />
       </Suspense>
     </Box>
   )

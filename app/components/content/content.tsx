@@ -12,10 +12,10 @@ import styles from './content.module.scss'
 
 export interface ContentProps {
   isRevert: boolean
-  isWebcamOn: boolean
+  webcamRef?: React.MutableRefObject<Webcam | null> | ((instance: Webcam | null) => void) | null | undefined
 }
 
-export default function Content({ isRevert, isWebcamOn }: ContentProps) {
+export default function Content({ isRevert, webcamRef }: ContentProps) {
   const router = useRouter()
   const params = useSearchParams()
   let langParam = params.get('lang')
@@ -27,7 +27,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
   const [text, setText] = useState('')
   const [debounceText] = useDebounce(text, 1000)
   const [query, setQuery] = useState('')
-  const webcamRef = useRef<Webcam | null>(null)
+  // const webcamRef = useRef<Webcam | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
 
   useEffect(() => {
@@ -98,49 +98,6 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
     }
   }
 
-  const displayPhoto = async (data: string) => {
-    try {
-      const formData = new FormData()
-      formData.append('my_file', dataURLtoFile(data, 'photo.png'))
-      const response = await fetch('http://127.0.0.1:8000/file', {
-        method: 'POST',
-        body: formData
-      })
-      if (!response.ok) {
-        throw new Error('Failed to upload photo')
-      }
-      const responseData = await response.json()
-      const base64String = responseData.image_base64
-      setImgSrc('data:image/png;base64,' + base64String)
-    } catch (error) {
-      console.error('Error:', error)
-    }
-  }
-
-  const capture = useCallback(async () => {
-    if (isWebcamOn) {
-      if (webcamRef.current) {
-        try {
-          const imageSrc = webcamRef.current.getScreenshot()
-          if (imageSrc) {
-            await displayPhoto(imageSrc)
-          } else {
-            console.error('Failed to capture image: Screenshot is null')
-          }
-        } catch (error) {
-          console.error('Error capturing image:', error)
-        }
-      } else {
-        console.error('Webcam reference is null')
-      }
-    }
-  }, [isWebcamOn])
-
-  useEffect(() => {
-    const interval = setInterval(capture, 500)
-    return () => clearInterval(interval)
-  })
-
   return (
     <Stack direction='row' spacing={1.5}>
       <Box
@@ -152,7 +109,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
       >
         {isRevert ? (
           <Box className={styles.webcamContainer}>
-            {isWebcamOn ? (
+            {
               <Webcam
                 ref={webcamRef}
                 className={styles.webcam}
@@ -162,7 +119,7 @@ export default function Content({ isRevert, isWebcamOn }: ContentProps) {
                   facingMode: 'user'
                 }}
               />
-            ) : null}
+            }
           </Box>
         ) : (
           <TextField

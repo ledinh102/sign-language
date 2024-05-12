@@ -1,20 +1,54 @@
-import { TranslateRounded, VideocamRounded } from '@mui/icons-material'
+import { TranslateRounded, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
 import Option from './option'
-import { Box } from '@mui/material'
+import { Box, Button } from '@mui/material'
+import colors from '../../constants.module.scss'
 
 export interface OptionListProps {
   isRevert: boolean
-  toggleWebcam?: () => void
+  capturing?: boolean
+  handleStartCaptureClick?: () => void
+  handleStopCaptureClick?: () => void
 }
 
-export default function OptionList({ isRevert, toggleWebcam }: OptionListProps) {
+export default function OptionList({
+  isRevert,
+  capturing,
+  handleStartCaptureClick,
+  handleStopCaptureClick
+}: OptionListProps) {
   return (
     <Box pt={2}>
-      <Option
-        toggleWebcam={toggleWebcam!}
-        text={isRevert ? 'Webcam' : 'Text'}
-        icon={isRevert ? <VideocamRounded /> : <TranslateRounded />}
-      />
+      {!isRevert && (
+        <Button
+          startIcon={<TranslateRounded />}
+          variant='outlined'
+          sx={{ background: colors.primaryColorActive, textTransform: 'none' }}
+        >
+          Text
+        </Button>
+      )}
+      {isRevert && (
+        <>
+          <Button
+            onClick={handleStartCaptureClick}
+            startIcon={<VideocamRounded />}
+            variant='outlined'
+            disabled={capturing}
+            sx={{ background: colors.primaryColorActive, textTransform: 'none' }}
+          >
+            Start recording
+          </Button>
+          <Button
+            onClick={handleStopCaptureClick}
+            startIcon={<VideocamOffRounded />}
+            variant='outlined'
+            disabled={!capturing}
+            sx={{ ml: 2, background: colors.primaryColorActive, textTransform: 'none' }}
+          >
+            Stop recording
+          </Button>
+        </>
+      )}
     </Box>
   )
 }

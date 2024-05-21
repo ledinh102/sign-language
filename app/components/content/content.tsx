@@ -1,7 +1,7 @@
 'use client'
 import useSpeechToText from '@/hooks/useSpeechToText'
 import { dataURLtoFile } from '@/lib/utils'
-import { Box, Stack, TextField } from '@mui/material'
+import { Box, IconButton, Stack, TextField, Typography } from '@mui/material'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ChangeEvent, createElement, useCallback, useEffect, useRef, useState } from 'react'
@@ -9,6 +9,7 @@ import Webcam from 'react-webcam'
 import { useDebounce } from 'use-debounce'
 import MicroAndCountText from '../micro/micro'
 import styles from './content.module.scss'
+import { VolumeUpRounded } from '@mui/icons-material'
 
 export interface ContentProps {
   isRevert: boolean
@@ -158,12 +159,22 @@ export default function Content({ isRevert, webcamRef }: ContentProps) {
           height={isRevert ? '100%' : '90%'}
           sx={{
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            justifyContent: 'space-between',
+            alignItems: 'space-between',
+            alignContent: 'space-between',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            flexWrap: 'wrap'
           }}
         >
+          {isRevert && (
+            <>
+              <Typography sx={{ width: '100%', p: 1 }}>What do you do</Typography>
+              <IconButton>
+                <VolumeUpRounded />
+              </IconButton>
+            </>
+          )}
           {imgSrc && <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' />}
           {query &&
             createElement('pose-viewer', {

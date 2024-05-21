@@ -33,7 +33,7 @@ export default function MessageList({ userId, conversation, getMessages, message
       conversationId: conversation?.id,
       senderId: userId
     }
-    const response = await fetch('http://127.0.0.1:8000/messages', {
+    const response = await fetch('http://localhost:8000/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

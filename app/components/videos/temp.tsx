@@ -1,4 +1,5 @@
 'use client'
+import useSpeechToText from '@/hooks/useSpeechToText'
 import { MicNoneRounded, MicOffRounded, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
 import { Box, Button, Card, IconButton, Stack } from '@mui/material'
 import {
@@ -12,9 +13,8 @@ import {
   useRemoteUsers
 } from 'agora-rtc-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createElement, useCallback, useEffect, useRef, useState } from 'react'
+import { createElement, useEffect, useState } from 'react'
 import { useDebounce } from 'use-debounce'
-import Webcam from 'react-webcam'
 
 export default function Videos(props: { channelName: string; AppID: string }) {
   const router = useRouter()
@@ -29,12 +29,18 @@ export default function Videos(props: { channelName: string; AppID: string }) {
   const [ws, setWs] = useState<WebSocket | null>(null)
   const [query, setQuery] = useState('')
 
-  // Webcam and Media Recorder refs and state
-  const webcamRef = useRef<Webcam>(null)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const [capturing, setCapturing] = useState<boolean>(false)
-  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([])
-  const [uploading, setUploading] = useState<boolean>(false)
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({
+    lang: 'en',
+    continuous: true
+  })
+
+  const [text] = useDebounce(transcript, 2000)
+
+  useEffect(() => {
+    console.log('userType: ', userType)
+    console.log('check condition: ', userType === null && micOn)
+    if (userType === null && micOn) startListening()
+  }, [])
 
   // Establish websocket connection
   useEffect(() => {
@@ -47,67 +53,13 @@ export default function Videos(props: { channelName: string; AppID: string }) {
       setQuery(encodeURIComponent(event.data))
     }
   }, [channelName])
-  // Capture handlers
-  const handleDataAvailable = useCallback(
-    ({ data }: { data: BlobPart }) => {
-      if (data instanceof Blob && data.size > 0) {
-        setRecordedChunks(prev => [...prev, data])
-      }
-    },
-    [setRecordedChunks]
-  )
-  const handleStartCaptureClick = useCallback(() => {
-    setCapturing(true)
-    if (webcamRef.current) {
-      const stream: MediaStream | undefined = webcamRef.current.stream!
-      if (stream) {
-        mediaRecorderRef.current = new MediaRecorder(stream, {
-          mimeType: 'video/webm'
-        })
-        mediaRecorderRef.current.addEventListener('dataavailable', handleDataAvailable)
-        mediaRecorderRef.current.start()
-      }
+
+  // Send query data over websocket when it changes
+  useEffect(() => {
+    if (ws && text) {
+      ws.send(text)
     }
-  }, [webcamRef, setCapturing, mediaRecorderRef, handleDataAvailable])
-
-  const handleUpload = useCallback(async () => {
-    console.log(recordedChunks)
-    if (recordedChunks.length) {
-      try {
-        setUploading(true)
-        const filename = 'recorded_video.webm'
-        const blob = new Blob(recordedChunks, {
-          type: 'video/webm'
-        })
-        const formData = new FormData()
-        formData.append('video', blob, filename)
-
-        const response = await fetch('http://localhost:8000/translate/upload', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (response.ok) {
-          console.log('Video uploaded successfully')
-        } else {
-          console.error('Failed to upload video')
-        }
-      } catch (error) {
-        console.error('Error uploading video:', error)
-      } finally {
-        setUploading(false)
-        setRecordedChunks([])
-      }
-    }
-  }, [recordedChunks])
-
-  const handleStopCaptureClick = useCallback(() => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop()
-      setCapturing(false)
-      handleUpload()
-    }
-  }, [mediaRecorderRef, setCapturing, handleUpload])
+  }, [ws, text])
 
   // Join Agora RTC channel
   usePublish([localMicrophoneTrack, localCameraTrack])
@@ -172,12 +124,6 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           <IconButton color={cameraOn ? 'info' : 'error'} sx={{ ml: 2 }} onClick={() => setCamera(prev => !prev)}>
             {cameraOn ? <VideocamRounded /> : <VideocamOffRounded />}
           </IconButton>
-          <IconButton color='info' sx={{ ml: 2 }} onClick={handleStartCaptureClick}>
-            Start Capture
-          </IconButton>
-          <IconButton color='error' sx={{ ml: 2 }} onClick={handleStopCaptureClick}>
-            Stop Capture
-          </IconButton>
         </Box>
         <Button
           variant='contained'
@@ -189,7 +135,6 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           End
         </Button>
       </Stack>
-      <Webcam audio={false} ref={webcamRef} style={{ display: 'none' }} />
     </Box>
   )
 }

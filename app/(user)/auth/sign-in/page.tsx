@@ -2,15 +2,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { GitHub, Google } from '@mui/icons-material'
 import { Box, Button, Divider, Paper, Stack, TextField, Typography } from '@mui/material'
+import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { redirect, useRouter } from 'next/navigation'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import styles from '../auth.module.scss'
-import { signIn, useSession } from 'next-auth/react'
+import { toast } from 'react-toastify'
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Username is required').max(100),
   email: z.string().min(1, 'Email is required').email('Invalid email'),
   password: z.string().min(1, 'Password is required').min(8, 'Password must have than 8 characters')
 })
@@ -28,7 +28,6 @@ export default function SignUpPage() {
     setError
   } = useForm<FormFields>({
     defaultValues: {
-      name: '',
       email: '',
       password: ''
     },
@@ -37,21 +36,20 @@ export default function SignUpPage() {
 
   const onSubmit: SubmitHandler<FormFields> = async data => {
     try {
-      const res = await fetch('/api/user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+      const signInData = await signIn('credentials', {
+        email: data.email,
+        password: data.password
       })
-      if (res.ok) router.push('/auth/sign-in')
-      else console.error('Registration failed')
 
-      console.log(data)
-    } catch (err) {
-      setError('email', {
-        message: 'This email is already taken'
-      })
+      if (signInData?.error) {
+        toast.warn(signInData.error)
+      } else {
+        // toast.success('Sign in successfully!')
+        router.push('/')
+        router.refresh()
+      }
+    } catch (error) {
+      toast.warn('Email or password is not correct')
     }
   }
 
@@ -69,20 +67,9 @@ export default function SignUpPage() {
         <Paper sx={{ mt: 4, width: '360px', p: 3, borderRadius: '10px' }} elevation={24}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Typography component='h2' variant='h6' textAlign='center'>
-              Sign up
+              Sign in
             </Typography>
             <Stack mt={2} spacing={2}>
-              <TextField
-                {...register('name')}
-                label='Username'
-                type='text'
-                placeholder='john'
-                variant='outlined'
-                size='small'
-                fullWidth
-                error={!!errors.name}
-                helperText={errors.name?.message}
-              />
               <TextField
                 {...register('email')}
                 label='Email'
@@ -105,7 +92,7 @@ export default function SignUpPage() {
                 helperText={errors.password?.message}
               />
               <Button type='submit' disabled={isSubmitting} variant='contained'>
-                {isSubmitting ? 'Submitting...' : 'Sign up'}
+                {isSubmitting ? 'Submitting...' : 'Sign in'}
               </Button>
               <Divider sx={{ py: 1 }}>or</Divider>
               <Button startIcon={<Google />} variant='outlined' onClick={() => signIn('google')}>
@@ -115,9 +102,9 @@ export default function SignUpPage() {
           </form>
 
           <Typography textAlign='center' mt={2}>
-            Already have an account{' '}
-            <Link href='/auth/sign-in' className={styles.redirectLink}>
-              Sign in
+            Don&apos;t have an account{' '}
+            <Link href='/auth/sign-up' className={styles.redirectLink}>
+              Sign up
             </Link>
           </Typography>
         </Paper>

@@ -1,9 +1,10 @@
 'use client'
-import { ChatRounded, TranslateRounded, VideoCallRounded } from '@mui/icons-material'
+import { AdminPanelSettingsRounded, ChatRounded, TranslateRounded, VideoCallRounded } from '@mui/icons-material'
 import { BottomNavigation, BottomNavigationAction, Box, Divider } from '@mui/material'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import styles from './footer.module.scss'
+import { useSession } from 'next-auth/react'
 
 export interface FooterProps {}
 
@@ -11,6 +12,7 @@ export default function Footer(props: FooterProps) {
   const path = usePathname()
   const router = useRouter()
   const [value, setValue] = useState(0)
+  const { data: session } = useSession()
 
   useEffect(() => {
     if (path.includes('/video-call')) setValue(1)
@@ -37,6 +39,9 @@ export default function Footer(props: FooterProps) {
             case 2:
               router.push('/chat')
               break
+            case 3:
+              router.push('/admin')
+              break
           }
           router.refresh()
         }}
@@ -44,6 +49,9 @@ export default function Footer(props: FooterProps) {
         <BottomNavigationAction label='Translate' icon={<TranslateRounded />} />
         <BottomNavigationAction label='Video Call' icon={<VideoCallRounded />} />
         <BottomNavigationAction label='Chat' icon={<ChatRounded />} />
+        {session?.user?.role === 'admin' && (
+          <BottomNavigationAction label='Admin' icon={<AdminPanelSettingsRounded />} />
+        )}
       </BottomNavigation>
     </Box>
   )

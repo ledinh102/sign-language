@@ -5,11 +5,12 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import AuthProviders from './auth/auth-providers'
-import Footer from './components/footer/footer'
-import Header from './components/header/header'
-import './globals.scss'
+
 import theme from './theme'
+import './globals.scss'
+import AuthProviders from './(user)/auth/auth-providers'
+import Header from './components/header/header'
+import Footer from './components/footer/footer'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -35,22 +36,22 @@ export default function RootLayout({
           <AppRouterCacheProvider>
             <AuthProviders>
               <Header />
-              <Container maxWidth='lg' sx={{ mt: '71px' }}>
-                <ToastContainer
-                  position='bottom-left'
-                  autoClose={4000}
-                  hideProgressBar
-                  newestOnTop={false}
-                  closeOnClick
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme='light'
-                  style={{ marginBottom: 30 }}
-                />
-                {children}
-              </Container>
+              {/* <Container maxWidth='lg' sx={{ mt: '71px' }}> */}
+              <ToastContainer
+                position='bottom-left'
+                autoClose={4000}
+                hideProgressBar
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme='light'
+                style={{ marginBottom: 30 }}
+              />
+              {children}
+              {/* </Container> */}
               <Footer />
             </AuthProviders>
           </AppRouterCacheProvider>

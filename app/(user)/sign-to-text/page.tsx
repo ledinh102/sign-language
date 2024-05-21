@@ -2,9 +2,9 @@
 import { Box } from '@mui/material'
 import { Suspense, useCallback, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
-import Content from '../components/content/content'
-import LanguageList from '../components/language_list/language_list'
-import OptionList from '../components/option_list/option_list'
+import Content from '../../components/content/content'
+import LanguageList from '../../components/language_list/language_list'
+import OptionList from '../../components/option_list/option_list'
 
 interface SignToTextProps {}
 
@@ -31,7 +31,7 @@ export default function SignToText(props: SignToTextProps) {
       const stream: MediaStream | undefined = webcamRef.current.stream!
       if (stream) {
         mediaRecorderRef.current = new MediaRecorder(stream, {
-          mimeType: 'video/mp4'
+          mimeType: 'video/webm'
         })
         mediaRecorderRef.current.addEventListener('dataavailable', handleDataAvailable)
         mediaRecorderRef.current.start()
@@ -43,14 +43,14 @@ export default function SignToText(props: SignToTextProps) {
     if (recordedChunks.length) {
       try {
         setUploading(true)
-        const filename = 'recorded_video.mp4'
+        const filename = 'recorded_video.webm'
         const blob = new Blob(recordedChunks, {
-          type: 'video/mp4'
+          type: 'video/webm'
         })
         const formData = new FormData()
         formData.append('video', blob, filename)
 
-        const response = await fetch('http://127.0.0.1:8000/translate/upload', {
+        const response = await fetch('http://localhost:8000/translate/upload', {
           method: 'POST',
           body: formData
         })

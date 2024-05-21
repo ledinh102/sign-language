@@ -15,7 +15,7 @@ export default function Header() {
   // }, [data?.user?.name])
 
   return (
-    <Box position='fixed' width='100%' zIndex={1000} top={0}>
+    <Box position='fixed' width='100%' zIndex={1000} top={0} sx={{ backgroundColor: 'white' }}>
       <Stack direction='row' px={1.5} py={1.5} justifyContent='space-between'>
         <Stack direction='row' alignItems='center'>
           <Box>

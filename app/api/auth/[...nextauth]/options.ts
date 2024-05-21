@@ -4,7 +4,7 @@ import { GoogleProfile } from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { db } from '@/lib/db'
-import { compare } from 'bcrypt'
+import { compare } from 'bcryptjs'
 
 export const options: NextAuthOptions = {
   adapter: PrismaAdapter(db),
@@ -34,7 +34,7 @@ export const options: NextAuthOptions = {
       },
 
       async authorize(credentials, req) {
-        console.log(credentials)
+        // console.log(credentials)
         if (!credentials?.email || !credentials?.password) {
           return null
         }
@@ -45,7 +45,7 @@ export const options: NextAuthOptions = {
         if (!existUser) return null
 
         if (existUser.password) {
-          console.log(existUser)
+          // console.log(existUser)
           const passwordMatch = await compare(credentials.password, existUser.password)
           if (!passwordMatch) {
             return null

@@ -62,7 +62,7 @@ export default function SearchUsers({ userId, getConversationList }: SearchUsers
     setIsOpenConfirm(false)
   }
   const addConversation = async () => {
-    const response = await fetch(`http://127.0.0.1:8000/conversations`, {
+    const response = await fetch(`http://localhost:8000/conversations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user1Id: userId, user2Id: userSelected?.id })
@@ -82,11 +82,12 @@ export default function SearchUsers({ userId, getConversationList }: SearchUsers
     handleClose()
     setSearchTerm('')
     setUserList([])
+    getConversationList(userId)
   }
 
   const debounced = useDebouncedCallback(email => {
     const getUsers = async () => {
-      const response = await fetch(`http://127.0.0.1:8000/${userId}/users/${email}`)
+      const response = await fetch(`http://localhost:8000/${userId}/users/email/${email}`)
       const userList: User[] = await response.json()
       setUserList(userList)
     }

@@ -2,18 +2,25 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { GitHub, Google } from '@mui/icons-material'
 import { Box, Button, Divider, Paper, Stack, TextField, Typography } from '@mui/material'
-import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { redirect, useRouter } from 'next/navigation'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import styles from '../auth.module.scss'
+import { signIn, useSession } from 'next-auth/react'
 import { toast } from 'react-toastify'
 
-const formSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Invalid email'),
-  password: z.string().min(1, 'Password is required').min(8, 'Password must have than 8 characters')
-})
+const formSchema = z
+  .object({
+    name: z.string().min(1, 'Username is required').max(100),
+    email: z.string().min(1, 'Email is required').email('Invalid email'),
+    password: z.string().min(1, 'Password is required').min(8, 'Password must have at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Confirm Password is required')
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'] // The path of the error message
+  })
 
 type FormFields = z.infer<typeof formSchema>
 
@@ -28,23 +35,33 @@ export default function SignUpPage() {
     setError
   } = useForm<FormFields>({
     defaultValues: {
+      name: '',
       email: '',
-      password: ''
+      password: '',
+      confirmPassword: ''
     },
     resolver: zodResolver(formSchema)
   })
 
   const onSubmit: SubmitHandler<FormFields> = async data => {
-    const signInData = await signIn('credentials', {
-      email: data.email,
-      password: data.password
-    })
-    if (signInData?.error) {
-      console.log(signInData.error)
-    } else {
-      // toast.success('Sign in successfully!')
-      router.push('/')
-      router.refresh()
+    try {
+      const res = await fetch('/api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        router.push('/auth/sign-in')
+        toast.success('Registration successful!')
+      } else console.error('Registration failed')
+
+      console.log(data)
+    } catch (err) {
+      setError('email', {
+        message: 'This email is already taken'
+      })
     }
   }
 
@@ -62,9 +79,20 @@ export default function SignUpPage() {
         <Paper sx={{ mt: 4, width: '360px', p: 3, borderRadius: '10px' }} elevation={24}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Typography component='h2' variant='h6' textAlign='center'>
-              Sign in
+              Sign up
             </Typography>
             <Stack mt={2} spacing={2}>
+              <TextField
+                {...register('name')}
+                label='Username'
+                type='text'
+                placeholder='john'
+                variant='outlined'
+                size='small'
+                fullWidth
+                error={!!errors.name}
+                helperText={errors.name?.message}
+              />
               <TextField
                 {...register('email')}
                 label='Email'
@@ -86,8 +114,18 @@ export default function SignUpPage() {
                 error={!!errors.password}
                 helperText={errors.password?.message}
               />
+              <TextField
+                {...register('confirmPassword')}
+                label='Confirm Password'
+                type='password'
+                variant='outlined'
+                size='small'
+                fullWidth
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+              />
               <Button type='submit' disabled={isSubmitting} variant='contained'>
-                {isSubmitting ? 'Submitting...' : 'Sign in'}
+                {isSubmitting ? 'Submitting...' : 'Sign up'}
               </Button>
               <Divider sx={{ py: 1 }}>or</Divider>
               <Button startIcon={<Google />} variant='outlined' onClick={() => signIn('google')}>
@@ -97,9 +135,9 @@ export default function SignUpPage() {
           </form>
 
           <Typography textAlign='center' mt={2}>
-            Don&apos;t have an account{' '}
-            <Link href='/auth/sign-up' className={styles.redirectLink}>
-              Sign up
+            Already have an account{' '}
+            <Link href='/auth/sign-in' className={styles.redirectLink}>
+              Sign in
             </Link>
           </Typography>
         </Paper>

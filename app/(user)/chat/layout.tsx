@@ -1,11 +1,12 @@
 'use client'
+import UserCard from '@/app/components/card/userCard'
+import LinearProgressCustom from '@/app/components/loading/LinearProgressCustom'
+import SearchUsers from '@/app/components/search/searchUser'
+import { ConversationCustom } from '@/app/model'
 import { Box, Divider, Grid, LinearProgress, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { redirect, useRouter } from 'next/navigation'
 import { ReactNode, useEffect, useState } from 'react'
-import UserCard from '../components/card/userCard'
-import SearchUsers from '../components/search/searchUser'
-import { ConversationCustom } from '../model'
 
 export default function LayoutChat({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession()
@@ -16,7 +17,7 @@ export default function LayoutChat({ children }: { children: ReactNode }) {
   const getConversationList = async (userId: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`http://127.0.0.1:8000/${userId}/conversations`)
+      const response = await fetch(`http://localhost:8000/${userId}/conversations`)
       const conversationList: ConversationCustom[] = await response.json()
       if (conversationList.length > 0) {
         router.push('/chat/' + conversationList[0].id)
@@ -34,7 +35,7 @@ export default function LayoutChat({ children }: { children: ReactNode }) {
   }, [status])
 
   if (status === 'loading') {
-    return <LinearProgress />
+    return <LinearProgressCustom />
   }
 
   if (status === 'unauthenticated') {
@@ -44,7 +45,16 @@ export default function LayoutChat({ children }: { children: ReactNode }) {
   return (
     <Box>
       <Grid container height='calc(100vh - 71px - 56px)'>
-        <Grid item xs={4} sx={{ borderRight: '1px solid #ccc', borderLeft: '1px solid #ccc' }}>
+        <Grid
+          item
+          xs={4}
+          sx={{
+            borderRight: '1px solid #ccc',
+            borderLeft: '1px solid #ccc',
+            maxHeight: 'calc(100vh - 71px - 56px)',
+            overflowY: 'auto'
+          }}
+        >
           <Box pt={2} px={2}>
             <Typography variant='h5' component='h1' fontWeight='bold' mb={1}>
               Chats

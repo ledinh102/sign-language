@@ -1,6 +1,6 @@
 'use client'
 import { MicNoneRounded, MicOffRounded, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
-import { Box, Button, Card, IconButton, Stack } from '@mui/material'
+import { Box, Button, Card, IconButton, Stack, Tooltip } from '@mui/material'
 import {
   LocalUser,
   RemoteUser,
@@ -13,7 +13,6 @@ import {
 } from 'agora-rtc-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createElement, useCallback, useEffect, useRef, useState } from 'react'
-import { useDebounce } from 'use-debounce'
 import Webcam from 'react-webcam'
 
 export default function Videos(props: { channelName: string; AppID: string }) {
@@ -35,6 +34,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
   const [capturing, setCapturing] = useState<boolean>(false)
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([])
   const [uploading, setUploading] = useState<boolean>(false)
+  const [uploadComplete, setUploadComplete] = useState<boolean>(false)
 
   // Establish websocket connection
   useEffect(() => {
@@ -47,6 +47,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
       setQuery(encodeURIComponent(event.data))
     }
   }, [channelName])
+
   // Capture handlers
   const handleDataAvailable = useCallback(
     ({ data }: { data: BlobPart }) => {
@@ -56,6 +57,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
     },
     [setRecordedChunks]
   )
+
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true)
     if (webcamRef.current) {
@@ -69,6 +71,13 @@ export default function Videos(props: { channelName: string; AppID: string }) {
       }
     }
   }, [webcamRef, setCapturing, mediaRecorderRef, handleDataAvailable])
+
+  const handleStopCaptureClick = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop()
+      setCapturing(false)
+    }
+  }, [mediaRecorderRef, setCapturing])
 
   const handleUpload = useCallback(async () => {
     console.log(recordedChunks)
@@ -89,6 +98,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
 
         if (response.ok) {
           console.log('Video uploaded successfully')
+          setUploadComplete(true)
         } else {
           console.error('Failed to upload video')
         }
@@ -100,14 +110,6 @@ export default function Videos(props: { channelName: string; AppID: string }) {
       }
     }
   }, [recordedChunks])
-
-  const handleStopCaptureClick = useCallback(() => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop()
-      setCapturing(false)
-      handleUpload()
-    }
-  }, [mediaRecorderRef, setCapturing, handleUpload])
 
   // Join Agora RTC channel
   usePublish([localMicrophoneTrack, localCameraTrack])
@@ -160,24 +162,45 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           px: 3,
           height: '80px',
           bottom: 0,
-          backgroundColor: 'rgba(0,0,0, 0.4)',
+          backgroundColor: 'rgba(0,0,0, 0.6)',
           borderRadius: 1,
           zIndex: 3
         }}
       >
         <Box>
-          <IconButton color={micOn ? 'info' : 'error'} onClick={() => setMic(prevMicOn => !prevMicOn)}>
-            {micOn ? <MicNoneRounded /> : <MicOffRounded />}
-          </IconButton>
-          <IconButton color={cameraOn ? 'info' : 'error'} sx={{ ml: 2 }} onClick={() => setCamera(prev => !prev)}>
-            {cameraOn ? <VideocamRounded /> : <VideocamOffRounded />}
-          </IconButton>
-          <IconButton color='info' sx={{ ml: 2 }} onClick={handleStartCaptureClick}>
-            Start Capture
-          </IconButton>
-          <IconButton color='error' sx={{ ml: 2 }} onClick={handleStopCaptureClick}>
-            Stop Capture
-          </IconButton>
+          <Tooltip title={micOn ? 'Mute Microphone' : 'Unmute Microphone'}>
+            <IconButton color={micOn ? 'info' : 'error'} onClick={() => setMic(prevMicOn => !prevMicOn)}>
+              {micOn ? <MicNoneRounded /> : <MicOffRounded />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={cameraOn ? 'Turn Off Camera' : 'Turn On Camera'}>
+            <IconButton color={cameraOn ? 'info' : 'error'} sx={{ ml: 2 }} onClick={() => setCamera(prev => !prev)}>
+              {cameraOn ? <VideocamRounded /> : <VideocamOffRounded />}
+            </IconButton>
+          </Tooltip>
+        </Box>
+        <Box>
+          {!capturing && recordedChunks.length === 0 && (
+            <Tooltip title='Start Recording'>
+              <Button variant='contained' color='primary' onClick={handleStartCaptureClick}>
+                Start Capture
+              </Button>
+            </Tooltip>
+          )}
+          {capturing && !uploadComplete && (
+            <Tooltip title='Stop Recording'>
+              <Button variant='contained' color='secondary' onClick={handleStopCaptureClick}>
+                Stop Capture
+              </Button>
+            </Tooltip>
+          )}
+          {!capturing && recordedChunks.length > 0 && !uploadComplete && (
+            <Tooltip title='Upload Recorded Video'>
+              <Button variant='contained' color='success' onClick={handleUpload}>
+                Upload Capture
+              </Button>
+            </Tooltip>
+          )}
         </Box>
         <Button
           variant='contained'
@@ -189,7 +212,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           End
         </Button>
       </Stack>
-      <Webcam audio={false} ref={webcamRef} style={{ display: 'none' }} />
+      <Webcam audio={true} ref={webcamRef} style={{ display: 'none' }} />
     </Box>
   )
 }

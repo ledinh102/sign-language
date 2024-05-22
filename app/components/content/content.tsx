@@ -1,15 +1,50 @@
 'use client'
 import useSpeechToText from '@/hooks/useSpeechToText'
-import { dataURLtoFile } from '@/lib/utils'
-import { Box, IconButton, Stack, TextField, Typography } from '@mui/material'
+import { Box, Stack, TextField, Typography } from '@mui/material'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChangeEvent, createElement, useCallback, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, createElement, useEffect, useState } from 'react'
 import Webcam from 'react-webcam'
 import { useDebounce } from 'use-debounce'
 import MicroAndCountText from '../micro/micro'
+import TextToAudio from '../text_to_audio/text_to_audio'
 import styles from './content.module.scss'
-import { VolumeUpRounded } from '@mui/icons-material'
+
+const LANG_EN = 'en'
+const LANG_VI = 'vi'
+const DEFAULT_LANG = LANG_EN
+
+const translateText = async (text: string, from: string, to: string) => {
+  const url = new URL('https://microsoft-translator-text.p.rapidapi.com/translate')
+  url.searchParams.append('to[0]', to)
+  url.searchParams.append('api-version', '3.0')
+  url.searchParams.append('from', from)
+  url.searchParams.append('profanityAction', 'NoAction')
+  url.searchParams.append('textType', 'plain')
+
+  const options = {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'X-RapidAPI-Key': process.env.NEXT_PUBLIC_RAPIDAPI_KEY!,
+      'X-RapidAPI-Host': process.env.NEXT_PUBLIC_RAPIDAPI_HOST!
+    },
+    body: JSON.stringify([
+      {
+        Text: text
+      }
+    ])
+  }
+
+  try {
+    const response = await fetch(url.toString(), options)
+    const result = await response.json()
+    return result[0].translations[0].text
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
 
 export interface ContentProps {
   isRevert: boolean
@@ -28,13 +63,12 @@ export default function Content({ isRevert, webcamRef }: ContentProps) {
   const [text, setText] = useState('')
   const [debounceText] = useDebounce(text, 1000)
   const [query, setQuery] = useState('')
-  // const webcamRef = useRef<Webcam | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
 
   useEffect(() => {
     setText(transcript)
     if (transcript) router.push(`?lang=${langParam}&text=${transcript}`)
-  }, [transcript])
+  }, [langParam, router, transcript])
 
   useEffect(() => {
     setQuery(encodeURIComponent(debounceText))
@@ -42,36 +76,15 @@ export default function Content({ isRevert, webcamRef }: ContentProps) {
 
   useEffect(() => {
     if (textParam) setText(decodeURIComponent(textParam))
-  }, [])
+  }, [textParam])
 
   useEffect(() => {
-    if (langParam === 'vi' && debounceText) {
-      const url =
-        'https://microsoft-translator-text.p.rapidapi.com/translate?to%5B0%5D=en&api-version=3.0&from=vi&profanityAction=NoAction&textType=plain'
-      const options = {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'X-RapidAPI-Key': process.env.NEXT_PUBLIC_RAPIDAPI_KEY!,
-          'X-RapidAPI-Host': process.env.NEXT_PUBLIC_RAPIDAPI_HOST!
-        },
-        body: JSON.stringify([
-          {
-            Text: `${debounceText}`
-          }
-        ])
-      }
-
-      ;(async () => {
-        try {
-          const response = await fetch(url, options)
-          const result = await response.json()
-          console.log(result[0].translations[0].text)
-          setQuery(encodeURIComponent(result[0].translations[0].text))
-        } catch (error) {
-          console.error(error)
+    if (langParam === LANG_VI && debounceText) {
+      translateText(debounceText, LANG_VI, LANG_EN).then(translatedText => {
+        if (translatedText) {
+          setQuery(encodeURIComponent(translatedText))
         }
-      })()
+      })
     }
   }, [debounceText, langParam])
 
@@ -114,7 +127,7 @@ export default function Content({ isRevert, webcamRef }: ContentProps) {
               <Webcam
                 ref={webcamRef}
                 className={styles.webcam}
-                audio={false}
+                audio={true}
                 screenshotFormat='image/jpeg'
                 videoConstraints={{
                   facingMode: 'user'
@@ -170,9 +183,7 @@ export default function Content({ isRevert, webcamRef }: ContentProps) {
           {isRevert && (
             <>
               <Typography sx={{ width: '100%', p: 1 }}>What do you do</Typography>
-              <IconButton>
-                <VolumeUpRounded />
-              </IconButton>
+              <TextToAudio text={'What do you do'} />
             </>
           )}
           {imgSrc && <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' />}

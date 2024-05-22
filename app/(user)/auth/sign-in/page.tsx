@@ -1,14 +1,15 @@
 'use client'
+import LinearProgressCustom from '@/app/components/loading/LinearProgressCustom'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { GitHub, Google } from '@mui/icons-material'
+import { Google } from '@mui/icons-material'
 import { Box, Button, Divider, Paper, Stack, TextField, Typography } from '@mui/material'
 import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { redirect, useRouter } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { toast } from 'react-toastify'
 import { z } from 'zod'
 import styles from '../auth.module.scss'
-import { toast } from 'react-toastify'
 
 const formSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email'),
@@ -18,8 +19,8 @@ const formSchema = z.object({
 type FormFields = z.infer<typeof formSchema>
 
 export default function SignUpPage() {
-  const router = useRouter()
   const { status } = useSession()
+  const searchParams = useSearchParams()
 
   const {
     register,
@@ -38,27 +39,29 @@ export default function SignUpPage() {
     try {
       const signInData = await signIn('credentials', {
         email: data.email,
-        password: data.password
+        password: data.password,
+        redirect: false
       })
-
+      console.log('signInData: ', signInData)
       if (signInData?.error) {
-        toast.warn(signInData.error)
+        toast.warn('Email or password is not correct')
       } else {
-        // toast.success('Sign in successfully!')
-        router.push('/')
-        router.refresh()
+        toast.success('Sign in successfully!')
+        if (searchParams.get('callbackUrl')) {
+          redirect(decodeURIComponent(searchParams.get('callbackUrl') as string))
+        } else {
+          redirect('/')
+        }
       }
-    } catch (error) {
-      toast.warn('Email or password is not correct')
-    }
+    } catch (error) {}
   }
 
   if (status === 'loading') {
-    return <div>Loading...</div>
+    return <LinearProgressCustom />
   }
 
   if (status === 'authenticated') {
-    return redirect('/')
+    return redirect(decodeURIComponent(searchParams.get('callbackUrl') as string))
   }
 
   return (
@@ -95,7 +98,17 @@ export default function SignUpPage() {
                 {isSubmitting ? 'Submitting...' : 'Sign in'}
               </Button>
               <Divider sx={{ py: 1 }}>or</Divider>
-              <Button startIcon={<Google />} variant='outlined' onClick={() => signIn('google')}>
+              <Button
+                startIcon={<Google />}
+                variant='outlined'
+                onClick={() => {
+                  console.log('callbackUrl: ', decodeURIComponent(searchParams.get('callbackUrl') as string))
+                  signIn('google', {
+                    callbackUrl: decodeURIComponent(searchParams.get('callbackUrl') as string),
+                    redirect: true
+                  })
+                }}
+              >
                 Sign in with Google
               </Button>
             </Stack>

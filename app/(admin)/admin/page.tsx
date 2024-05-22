@@ -1,7 +1,7 @@
 'use client'
 import PieChartCustom from '@/app/components/chart/pie'
 import CreateEditUserForm, { UserFormFields } from '@/app/components/form/createEditUser'
-import { AddRounded, DeleteRounded, EditRounded } from '@mui/icons-material'
+import { AddRounded, DeleteRounded, EditRounded, VisibilityRounded } from '@mui/icons-material'
 import {
   Avatar,
   Box,
@@ -79,7 +79,7 @@ export default function AdminPage() {
   const [conversationsAndMessages, setConversationsAndMessages] = useState<SumConversationsMessages[]>([])
   const [selection, setSelection] = useState<GridRowSelectionModel>([])
   const [openCreateEditUser, setOpenCreateEditUser] = useState(false)
-  const [action, setAction] = useState<'create' | 'edit'>('create')
+  const [action, setAction] = useState<'detail' | 'create' | 'edit'>('create')
   const [isOpenConfirm, setIsOpenConfirm] = useState(false)
 
   const getUserList = async () => {
@@ -163,7 +163,7 @@ export default function AdminPage() {
   }, [])
 
   if (status === 'loading') return <Typography>Loading...</Typography>
-  if (session?.user.role !== 'admin') {
+  if (session?.user?.role !== 'admin') {
     console.log(session?.user.role)
     setTimeout(() => {
       router.push('/')
@@ -195,6 +195,18 @@ export default function AdminPage() {
             }}
           >
             Add new user
+          </Button>
+          <Button
+            variant='contained'
+            startIcon={<VisibilityRounded />}
+            color='info'
+            disabled={selection?.length !== 1}
+            onClick={() => {
+              setAction('detail')
+              setOpenCreateEditUser(true)
+            }}
+          >
+            Detail
           </Button>
           <Button
             variant='contained'

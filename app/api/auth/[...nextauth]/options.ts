@@ -34,7 +34,6 @@ export const options: NextAuthOptions = {
       },
 
       async authorize(credentials, req) {
-        // console.log(credentials)
         if (!credentials?.email || !credentials?.password) {
           return null
         }
@@ -45,11 +44,12 @@ export const options: NextAuthOptions = {
         if (!existUser) return null
 
         if (existUser.password) {
-          // console.log(existUser)
           const passwordMatch = await compare(credentials.password, existUser.password)
           if (!passwordMatch) {
-            return null
+            return null // return null when the password doesn't match
           }
+        } else {
+          return null // return null when there's no password
         }
 
         return {
@@ -80,9 +80,9 @@ export const options: NextAuthOptions = {
     }
   },
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      return baseUrl
-    },
+    // async redirect({ url, baseUrl }) {
+    //   return baseUrl
+    // },
     jwt({ token, user }) {
       if (user) {
         token.role = user.role

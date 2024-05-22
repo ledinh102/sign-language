@@ -1,5 +1,5 @@
-import { TranslateRounded, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
-import Option from './option'
+// OptionList.tsx
+import { TranslateRounded, VideocamOffRounded, VideocamRounded, CloudUploadRounded } from '@mui/icons-material'
 import { Box, Button } from '@mui/material'
 import colors from '../../constants.module.scss'
 
@@ -8,13 +8,15 @@ export interface OptionListProps {
   capturing?: boolean
   handleStartCaptureClick?: () => void
   handleStopCaptureClick?: () => void
+  handleUpload?: () => void
 }
 
 export default function OptionList({
   isRevert,
   capturing,
   handleStartCaptureClick,
-  handleStopCaptureClick
+  handleStopCaptureClick,
+  handleUpload
 }: OptionListProps) {
   return (
     <Box pt={2}>
@@ -46,6 +48,14 @@ export default function OptionList({
             sx={{ ml: 2, background: colors.primaryColorActive, textTransform: 'none' }}
           >
             Stop recording
+          </Button>
+          <Button
+            onClick={handleUpload}
+            startIcon={<CloudUploadRounded />}
+            variant='outlined'
+            sx={{ ml: 2, background: colors.primaryColorActive, textTransform: 'none' }}
+          >
+            Upload
           </Button>
         </>
       )}

@@ -34,7 +34,7 @@ export interface CreateEditUserFormProps {
   setOpen: Dispatch<SetStateAction<boolean>>
   userInfo: User
   setUserInfo: Dispatch<SetStateAction<User>>
-  action: 'create' | 'edit'
+  action: 'detail' | 'create' | 'edit'
   createUser: (data: UserFormFields) => void
   editUser: (data: Partial<UserFormFields>) => void
 }
@@ -87,7 +87,7 @@ export default function CreateEditUserForm({
   useEffect(() => {
     console.log('Modal open:', open)
     if (open) {
-      if (action === 'edit' && userId) {
+      if (action === 'edit' || (action === 'detail' && userId)) {
         getUserInfo()
       } else {
         setUserInfo({ ...userInfo, name: '', image: '', email: '', role: 'user' })
@@ -128,6 +128,7 @@ export default function CreateEditUserForm({
               helperText={errors.name?.message}
               focused
               InputLabelProps={{ shrink: true }}
+              InputProps={{ readOnly: action === 'detail' }}
             />
             <TextField
               {...register('image')}
@@ -137,6 +138,7 @@ export default function CreateEditUserForm({
               error={!!errors.image}
               helperText={errors.image?.message}
               InputLabelProps={{ shrink: true }}
+              InputProps={{ readOnly: action === 'detail' }}
             />
             <TextField
               {...register('email')}
@@ -146,6 +148,7 @@ export default function CreateEditUserForm({
               error={!!errors.email}
               helperText={errors.email?.message}
               InputLabelProps={{ shrink: true }}
+              InputProps={{ readOnly: action === 'detail' }}
             />
             {action === 'create' && (
               <TextField
@@ -169,11 +172,18 @@ export default function CreateEditUserForm({
                   fullWidth
                   value={field.value || 'user'}
                   onChange={(_, value) => field.onChange(value)}
-                  renderInput={params => <TextField {...params} label='Role' />}
+                  renderInput={params => (
+                    <TextField {...params} label='Role' InputProps={{ readOnly: action === 'detail' }} />
+                  )}
                 />
               )}
             />
-            <Button type='submit' variant='contained' disabled={isSubmitting}>
+            <Button
+              type='submit'
+              variant='contained'
+              disabled={isSubmitting}
+              sx={{ display: action === 'detail' ? 'none' : 'block' }}
+            >
               Submit
             </Button>
           </Stack>

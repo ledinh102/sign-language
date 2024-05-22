@@ -1,8 +1,13 @@
 'use client'
+import { VolumeUpRounded } from '@mui/icons-material'
+import { IconButton } from '@mui/material'
 import { useState } from 'react'
 
-function App() {
-  const [ourText, setOurText] = useState('')
+interface TextToAudioProps {
+  text: string
+}
+
+export default function TextToAudio({ text }: TextToAudioProps) {
   let msg = null
 
   if (typeof window !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined') {
@@ -11,7 +16,7 @@ function App() {
 
   const speechHandler = () => {
     if (msg) {
-      msg.text = ourText
+      msg.text = text
       window.speechSynthesis.speak(msg)
     } else {
       console.error('SpeechSynthesisUtterance is not supported in this environment.')
@@ -19,12 +24,8 @@ function App() {
   }
 
   return (
-    <div className='App'>
-      <h1>React Text to Speech App</h1>
-      <input type='text' value={ourText} placeholder='Enter Text' onChange={e => setOurText(e.target.value)} />
-      <button onClick={speechHandler}>SPEAK</button>
-    </div>
+    <IconButton onClick={speechHandler}>
+      <VolumeUpRounded />
+    </IconButton>
   )
 }
-
-export default App

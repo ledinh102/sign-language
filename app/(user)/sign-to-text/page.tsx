@@ -1,3 +1,4 @@
+// SignToText.tsx
 'use client'
 import { Box } from '@mui/material'
 import { Suspense, useCallback, useRef, useState } from 'react'
@@ -38,6 +39,14 @@ export default function SignToText(props: SignToTextProps) {
       }
     }
   }, [webcamRef, setCapturing, mediaRecorderRef, handleDataAvailable])
+
+  const handleStopCaptureClick = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop()
+      setCapturing(false)
+    }
+  }, [mediaRecorderRef, setCapturing])
+
   const handleUpload = useCallback(async () => {
     console.log(recordedChunks)
     if (recordedChunks.length) {
@@ -68,13 +77,6 @@ export default function SignToText(props: SignToTextProps) {
       }
     }
   }, [recordedChunks])
-  const handleStopCaptureClick = useCallback(() => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop()
-      setCapturing(false)
-      handleUpload()
-    }
-  }, [mediaRecorderRef, setCapturing, handleUpload])
 
   return (
     <Box>
@@ -83,6 +85,7 @@ export default function SignToText(props: SignToTextProps) {
         capturing={capturing}
         handleStartCaptureClick={handleStartCaptureClick}
         handleStopCaptureClick={handleStopCaptureClick}
+        handleUpload={handleUpload}
       />
       <Suspense>
         <LanguageList isRevert={isRevert} />

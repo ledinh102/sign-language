@@ -75,7 +75,7 @@ export default function SearchUsers({ userId, getConversationList }: SearchUsers
       toast.success('Add user successfully')
       if (ws) ws.send(JSON.stringify(newConversation))
     }
-    router.push(`/chat/?currentChat=${newConversation.id}`)
+    router.push(`/chat/${newConversation.id}`)
   }
   const handleConfirm = async () => {
     await addConversation()

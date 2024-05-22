@@ -5,7 +5,7 @@ import SearchUsers from '@/app/components/search/searchUser'
 import { ConversationCustom } from '@/app/model'
 import { Box, Divider, Grid, LinearProgress, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { redirect, useRouter } from 'next/navigation'
+import { redirect, useParams, useRouter } from 'next/navigation'
 import { ReactNode, useEffect, useState } from 'react'
 
 export default function LayoutChat({ children }: { children: ReactNode }) {
@@ -13,13 +13,14 @@ export default function LayoutChat({ children }: { children: ReactNode }) {
   const [conversationList, setConversationList] = useState<ConversationCustom[]>([])
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const params = useParams<{ conversationId: string }>()
 
   const getConversationList = async (userId: string) => {
     setLoading(true)
     try {
       const response = await fetch(`http://localhost:8000/${userId}/conversations`)
       const conversationList: ConversationCustom[] = await response.json()
-      if (conversationList.length > 0) {
+      if (conversationList.length > 0 && params.conversationId === undefined) {
         router.push('/chat/' + conversationList[0].id)
       }
       setConversationList(conversationList)
@@ -39,7 +40,7 @@ export default function LayoutChat({ children }: { children: ReactNode }) {
   }
 
   if (status === 'unauthenticated') {
-    return redirect('/auth/sign-in')
+    return redirect('/auth/sign-in?callbackUrl=' + encodeURIComponent(window.location.origin + '/chat'))
   }
 
   return (
@@ -80,6 +81,13 @@ export default function LayoutChat({ children }: { children: ReactNode }) {
                   }
                 />
               ))}
+            {conversationList && conversationList.length === 0 && (
+              <Box sx={{ p: 2 }}>
+                <Typography variant='h6' component='h2' textAlign='center'>
+                  No conversations found
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Grid>
         <Grid item xs={8} sx={{ p: 0, borderRight: '1px solid #ccc' }}>

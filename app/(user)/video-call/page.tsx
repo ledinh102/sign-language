@@ -95,7 +95,7 @@ export default function VideoCall() {
   }
 
   if (status === 'unauthenticated') {
-    return redirect('/auth/sign-in')
+    return redirect('/auth/sign-in?callbackUrl=' + encodeURIComponent(window.location.origin + '/video-call'))
   }
 
   return (

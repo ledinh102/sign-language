@@ -19,7 +19,7 @@ const formSchema = z.object({
 
 type FormFields = z.infer<typeof formSchema>
 
-export default function SignUpPage() {
+function SignUpForm() {
   const { status } = useSession()
   const searchParams = useSearchParams()
 
@@ -99,21 +99,19 @@ export default function SignUpPage() {
                 {isSubmitting ? 'Submitting...' : 'Sign in'}
               </Button>
               <Divider sx={{ py: 1 }}>or</Divider>
-              <Suspense>
-                <Button
-                  startIcon={<Google />}
-                  variant='outlined'
-                  onClick={() => {
-                    console.log('callbackUrl: ', decodeURIComponent(searchParams.get('callbackUrl') as string))
-                    signIn('google', {
-                      callbackUrl: decodeURIComponent(searchParams.get('callbackUrl') as string),
-                      redirect: true
-                    })
-                  }}
-                >
-                  Sign in with Google
-                </Button>
-              </Suspense>
+              <Button
+                startIcon={<Google />}
+                variant='outlined'
+                onClick={() => {
+                  console.log('callbackUrl: ', decodeURIComponent(searchParams.get('callbackUrl') as string))
+                  signIn('google', {
+                    callbackUrl: decodeURIComponent(searchParams.get('callbackUrl') as string),
+                    redirect: true
+                  })
+                }}
+              >
+                Sign in with Google
+              </Button>
             </Stack>
           </form>
 
@@ -126,5 +124,13 @@ export default function SignUpPage() {
         </Paper>
       </Stack>
     </Box>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<LinearProgressCustom />}>
+      <SignUpForm />
+    </Suspense>
   )
 }

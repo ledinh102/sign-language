@@ -10,6 +10,7 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { z } from 'zod'
 import styles from '../auth.module.scss'
+import { Suspense } from 'react'
 
 const formSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email'),
@@ -98,19 +99,21 @@ export default function SignUpPage() {
                 {isSubmitting ? 'Submitting...' : 'Sign in'}
               </Button>
               <Divider sx={{ py: 1 }}>or</Divider>
-              <Button
-                startIcon={<Google />}
-                variant='outlined'
-                onClick={() => {
-                  console.log('callbackUrl: ', decodeURIComponent(searchParams.get('callbackUrl') as string))
-                  signIn('google', {
-                    callbackUrl: decodeURIComponent(searchParams.get('callbackUrl') as string),
-                    redirect: true
-                  })
-                }}
-              >
-                Sign in with Google
-              </Button>
+              <Suspense>
+                <Button
+                  startIcon={<Google />}
+                  variant='outlined'
+                  onClick={() => {
+                    console.log('callbackUrl: ', decodeURIComponent(searchParams.get('callbackUrl') as string))
+                    signIn('google', {
+                      callbackUrl: decodeURIComponent(searchParams.get('callbackUrl') as string),
+                      redirect: true
+                    })
+                  }}
+                >
+                  Sign in with Google
+                </Button>
+              </Suspense>
             </Stack>
           </form>
 

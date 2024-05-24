@@ -13,7 +13,7 @@ const UploadFile = () => {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('http://192.168.1.44:8000/audio-to-text', {
+      const response = await fetch('https://192.168.1.44:8000/audio-to-text', {
         method: 'POST',
         body: formData
       })

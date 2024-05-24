@@ -37,7 +37,7 @@ export default function SearchUsers({ userId, getConversationList }: SearchUsers
   const [ws, setWs] = useState<WebSocket | null>(null)
 
   useEffect(() => {
-    const socket = new WebSocket(`ws://192.168.1.44:8000/conversations/new-conversation/${userId}`)
+    const socket = new WebSocket(`wss://192.168.1.44:8000/conversations/new-conversation/${userId}`)
     setWs(socket)
 
     socket.onmessage = function (event) {
@@ -62,7 +62,7 @@ export default function SearchUsers({ userId, getConversationList }: SearchUsers
     setIsOpenConfirm(false)
   }
   const addConversation = async () => {
-    const response = await fetch(`http://192.168.1.44:8000/conversations`, {
+    const response = await fetch(`https://192.168.1.44:8000/conversations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user1Id: userId, user2Id: userSelected?.id })
@@ -87,7 +87,7 @@ export default function SearchUsers({ userId, getConversationList }: SearchUsers
 
   const debounced = useDebouncedCallback(email => {
     const getUsers = async () => {
-      const response = await fetch(`http://192.168.1.44:8000/${userId}/users/email/${email}`)
+      const response = await fetch(`https://192.168.1.44:8000/${userId}/users/email/${email}`)
       const userList: User[] = await response.json()
       setUserList(userList)
     }

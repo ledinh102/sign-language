@@ -47,7 +47,7 @@ export default function SignToText(props: SignToTextProps) {
       const formData = new FormData()
       formData.append('video', blob, 'react-webcam-stream-capture.webm')
 
-      const response = await fetch('http://192.168.1.44:8000/translate/upload', {
+      const response = await fetch('https://192.168.1.44:8000/translate/upload', {
         method: 'POST',
         body: formData
       })

@@ -110,8 +110,8 @@ export default function Header() {
               </Menu>
             </Stack>
           ) : (
-            <Button variant='contained' onClick={() => signIn()}>
-              Sign In
+            <Button variant='contained' onClick={() => signIn()} sx={{ textTransform: 'none' }}>
+              Sign in
             </Button>
           )}
         </Stack>

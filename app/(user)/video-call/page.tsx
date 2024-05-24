@@ -55,11 +55,11 @@ export default function VideoCall() {
     const { channel, currentUserType, email } = data
     console.log('Form data:', data)
     const inviteLink = `${window.location.origin}/video-call/channel/${channel}${
-      currentUserType === 'deaf-dumb' ? '/?user=dd' : ''
+      currentUserType === 'deaf-dumb' ? '/?user=dd' : '?user=normal '
     }`
     if (email) {
       try {
-        const sendEmail = await fetch('http://localhost:8000/send-email', {
+        const sendEmail = await fetch('http://192.168.1.44:8000/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ toEmail: email, url: inviteLink })
@@ -156,7 +156,7 @@ export default function VideoCall() {
               label='Invite Link'
               type='text'
               value={`${window.location.origin}/video-call/channel/${watch('channel')}${
-                friendUserType === 'deaf-dumb' ? '/?user=dd' : ''
+                friendUserType === 'deaf-dumb' ? '/?user=dd' : '?user=normal'
               }`}
               InputProps={{
                 readOnly: true

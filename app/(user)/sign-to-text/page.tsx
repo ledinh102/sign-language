@@ -1,4 +1,3 @@
-// SignToText.tsx
 'use client'
 import { Box } from '@mui/material'
 import { Suspense, useCallback, useRef, useState } from 'react'
@@ -17,75 +16,71 @@ export default function SignToText(props: SignToTextProps) {
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([])
   const [uploading, setUploading] = useState<boolean>(false)
 
+  const handleStartCaptureClick = useCallback(() => {
+    setCapturing(true)
+    const stream = webcamRef.current?.stream
+    if (stream) {
+      mediaRecorderRef.current = new MediaRecorder(stream, {
+        mimeType: 'video/webm'
+      })
+      mediaRecorderRef.current.addEventListener('dataavailable', handleDataAvailable)
+      mediaRecorderRef.current.start()
+    }
+  }, [webcamRef, setCapturing, mediaRecorderRef])
+
   const handleDataAvailable = useCallback(
-    ({ data }: { data: BlobPart }) => {
-      if (data instanceof Blob && data.size > 0) {
-        setRecordedChunks(prev => [...prev, data])
+    ({ data }: BlobEvent) => {
+      if (data.size > 0) {
+        setRecordedChunks(prev => prev.concat(data))
       }
     },
     [setRecordedChunks]
   )
 
-  const handleStartCaptureClick = useCallback(() => {
-    setCapturing(true)
-    if (webcamRef.current) {
-      const stream: MediaStream | undefined = webcamRef.current.stream!
-      if (stream) {
-        mediaRecorderRef.current = new MediaRecorder(stream, {
-          mimeType: 'video/webm'
-        })
-        mediaRecorderRef.current.addEventListener('dataavailable', handleDataAvailable)
-        mediaRecorderRef.current.start()
+  const handleUpload = useCallback(async () => {
+    setUploading(true)
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: 'video/webm'
+      })
+
+      const formData = new FormData()
+      formData.append('video', blob, 'react-webcam-stream-capture.webm')
+
+      const response = await fetch('http://192.168.1.44:8000/translate/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.ok) {
+        console.log('Video uploaded successfully')
+        const result = await response.json()
+        console.log(result.data)
+        setRecordedChunks([])
+      } else {
+        console.error('Failed to upload video')
       }
+      setUploading(false)
     }
-  }, [webcamRef, setCapturing, mediaRecorderRef, handleDataAvailable])
+  }, [recordedChunks])
 
   const handleStopCaptureClick = useCallback(() => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop()
-      setCapturing(false)
     }
-  }, [mediaRecorderRef, setCapturing])
-
-  const handleUpload = useCallback(async () => {
-    console.log(recordedChunks)
-    if (recordedChunks.length) {
-      try {
-        setUploading(true)
-        const filename = 'recorded_video.webm'
-        const blob = new Blob(recordedChunks, {
-          type: 'video/webm'
-        })
-        const formData = new FormData()
-        formData.append('video', blob, filename)
-
-        const response = await fetch('http://localhost:8000/translate/upload', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (response.ok) {
-          console.log('Video uploaded successfully')
-        } else {
-          console.error('Failed to upload video')
-        }
-      } catch (error) {
-        console.error('Error uploading video:', error)
-      } finally {
-        setUploading(false)
-        setRecordedChunks([])
-      }
-    }
-  }, [recordedChunks])
+    setCapturing(false)
+  }, [mediaRecorderRef, webcamRef, setCapturing])
 
   return (
     <Box>
       <OptionList
         isRevert={isRevert}
         capturing={capturing}
+        uploading={uploading}
         handleStartCaptureClick={handleStartCaptureClick}
         handleStopCaptureClick={handleStopCaptureClick}
         handleUpload={handleUpload}
+        recordedChunks={recordedChunks}
       />
       <Suspense>
         <LanguageList isRevert={isRevert} />

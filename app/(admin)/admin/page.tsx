@@ -83,13 +83,13 @@ export default function AdminPage() {
   const [isOpenConfirm, setIsOpenConfirm] = useState(false)
 
   const getUserList = async () => {
-    const response = await fetch('http://localhost:8000/users')
+    const response = await fetch('http://192.168.1.44:8000/users')
     const userList: User[] = await response.json()
     setUserList(userList)
   }
 
   const getSumConversationsAndMessages = async () => {
-    const response = await fetch('http://localhost:8000/sum-conversations-and-messages')
+    const response = await fetch('http://192.168.1.44:8000/sum-conversations-and-messages')
     const conversationsAndMessages: SumConversationsMessages[] = await response.json()
     console.log(conversationsAndMessages)
     setConversationsAndMessages(conversationsAndMessages)
@@ -98,7 +98,7 @@ export default function AdminPage() {
   const createUser = async (data: UserFormFields) => {
     try {
       const hashedPassword = await hash(data.password || '', 10)
-      const response = await fetch('http://localhost:8000/users', {
+      const response = await fetch('http://192.168.1.44:8000/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -130,7 +130,7 @@ export default function AdminPage() {
       body.password = await hash(data.password, 10)
     }
 
-    const response = await fetch(`http://localhost:8000/users/${selection[0]}`, {
+    const response = await fetch(`http://192.168.1.44:8000/users/${selection[0]}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -143,7 +143,7 @@ export default function AdminPage() {
 
   const deleteUsers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/users/', {
+      const response = await fetch('http://192.168.1.44:8000/users/', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: selection })

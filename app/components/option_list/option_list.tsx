@@ -1,22 +1,26 @@
 // OptionList.tsx
-import { TranslateRounded, VideocamOffRounded, VideocamRounded, CloudUploadRounded } from '@mui/icons-material'
+import { TranslateRounded, UploadFile, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
 import { Box, Button } from '@mui/material'
 import colors from '../../constants.module.scss'
 
 export interface OptionListProps {
   isRevert: boolean
   capturing?: boolean
+  uploading?: boolean
   handleStartCaptureClick?: () => void
   handleStopCaptureClick?: () => void
   handleUpload?: () => void
+  recordedChunks?: Blob[]
 }
 
 export default function OptionList({
   isRevert,
   capturing,
+  uploading,
   handleStartCaptureClick,
   handleStopCaptureClick,
-  handleUpload
+  handleUpload,
+  recordedChunks
 }: OptionListProps) {
   return (
     <Box pt={2}>
@@ -32,30 +36,21 @@ export default function OptionList({
       {isRevert && (
         <>
           <Button
-            onClick={handleStartCaptureClick}
-            startIcon={<VideocamRounded />}
+            onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+            startIcon={capturing ? <VideocamRounded /> : <VideocamOffRounded />}
             variant='outlined'
-            disabled={capturing}
             sx={{ background: colors.primaryColorActive, textTransform: 'none' }}
           >
-            Start recording
-          </Button>
-          <Button
-            onClick={handleStopCaptureClick}
-            startIcon={<VideocamOffRounded />}
-            variant='outlined'
-            disabled={!capturing}
-            sx={{ ml: 2, background: colors.primaryColorActive, textTransform: 'none' }}
-          >
-            Stop recording
+            {capturing ? 'Recording' : 'Record'}
           </Button>
           <Button
             onClick={handleUpload}
-            startIcon={<CloudUploadRounded />}
+            startIcon={<UploadFile />}
             variant='outlined'
             sx={{ ml: 2, background: colors.primaryColorActive, textTransform: 'none' }}
+            disabled={recordedChunks?.length === 0 || uploading || capturing ? true : false}
           >
-            Upload
+            {uploading ? 'Uploading' : 'Upload'}
           </Button>
         </>
       )}

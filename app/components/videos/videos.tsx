@@ -1,6 +1,6 @@
 'use client'
 import { MicNoneRounded, MicOffRounded, VideocamOffRounded, VideocamRounded } from '@mui/icons-material'
-import { Box, Button, Card, IconButton, Stack, Tooltip } from '@mui/material'
+import { Box, Button, Card, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import {
   LocalUser,
   RemoteUser,
@@ -12,8 +12,10 @@ import {
   useRemoteUsers
 } from 'agora-rtc-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createElement, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, createElement, use, useCallback, useEffect, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
+import LinearProgressCustom from '../loading/LinearProgressCustom'
+import styles from './videos.module.scss'
 
 export default function Videos(props: { channelName: string; AppID: string }) {
   const router = useRouter()
@@ -21,7 +23,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
   const { AppID, channelName } = props
   const [micOn, setMic] = useState(userType === 'dd' ? false : true)
   const [cameraOn, setCamera] = useState(true)
-  const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(micOn)
+  // const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(micOn)
   const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack(cameraOn)
   const remoteUsers = useRemoteUsers()
   const { audioTracks } = useRemoteAudioTracks(remoteUsers)
@@ -39,12 +41,12 @@ export default function Videos(props: { channelName: string; AppID: string }) {
   // Establish websocket connection
   useEffect(() => {
     const clientID = Date.now()
-    const socket = new WebSocket(`ws://localhost:8000/video-call/${clientID}`)
+    const socket = new WebSocket(`ws://192.168.1.44:8000/video-call/${clientID}/${userType}`)
     setWs(socket)
 
     socket.onmessage = function (event) {
       console.log('query: ', event.data)
-      setQuery(encodeURIComponent(event.data))
+      if (userType === 'dd') setQuery(encodeURIComponent(event.data))
     }
   }, [channelName])
 
@@ -84,19 +86,22 @@ export default function Videos(props: { channelName: string; AppID: string }) {
     if (recordedChunks.length) {
       try {
         setUploading(true)
-        const filename = 'recorded_video.webm'
+        const filename = 'audio.webm'
         const blob = new Blob(recordedChunks, {
           type: 'video/webm'
         })
         const formData = new FormData()
         formData.append('video', blob, filename)
 
-        const response = await fetch('http://localhost:8000/translate/upload', {
+        const response = await fetch('http://192.168.1.44:8000/audioToText', {
           method: 'POST',
           body: formData
         })
 
         if (response.ok) {
+          const result = await response.json()
+          console.log('Result:', result)
+          if (result.text) ws?.send(result.text)
           console.log('Video uploaded successfully')
           setUploadComplete(true)
         } else {
@@ -107,17 +112,21 @@ export default function Videos(props: { channelName: string; AppID: string }) {
       } finally {
         setUploading(false)
         setRecordedChunks([])
+        setCapturing(false) // Reset capturing state here
+        setUploadComplete(false) // Reset uploadComplete state here
       }
     }
   }, [recordedChunks])
 
   // Join Agora RTC channel
-  usePublish([localMicrophoneTrack, localCameraTrack])
+  // usePublish([localMicrophoneTrack, localCameraTrack])
+  usePublish([localCameraTrack])
   useJoin({ appid: AppID, channel: channelName, token: null })
 
   audioTracks.map(track => track.play())
-  const deviceLoading = isLoadingMic || isLoadingCam
-  if (deviceLoading) return <div>Loading devices...</div>
+  // const deviceLoading = isLoadingMic || isLoadingCam
+  const deviceLoading = isLoadingCam
+  if (deviceLoading) return <LinearProgressCustom />
 
   return (
     <Box width='780px' mx='auto' pt={2} position='relative'>
@@ -138,13 +147,16 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           }
         >
           <LocalUser
-            audioTrack={localMicrophoneTrack}
+            // audioTrack={localMicrophoneTrack}
             videoTrack={localCameraTrack}
             cameraOn={cameraOn}
             micOn={micOn}
             playAudio={micOn}
             playVideo={cameraOn}
           />
+          <Suspense>
+            {userType === 'normal' && <Typography className={styles.caption}>helaos jdfojasdo ifjsaod</Typography>}
+          </Suspense>
         </Card>
         {remoteUsers.map(user => (
           <Box key={user.uid} sx={{ width: '100%', height: '100%' }}>
@@ -212,7 +224,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           End
         </Button>
       </Stack>
-      <Webcam audio={true} ref={webcamRef} style={{ display: 'none' }} />
+      <Webcam audio={userType === 'dd' ? false : true} ref={webcamRef} style={{ display: 'none' }} />
     </Box>
   )
 }

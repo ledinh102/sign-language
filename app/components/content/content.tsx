@@ -127,8 +127,9 @@ export default function Content({ isRevert, webcamRef }: ContentProps) {
               <Webcam
                 ref={webcamRef}
                 className={styles.webcam}
-                audio={true}
-                screenshotFormat='image/jpeg'
+                audio={false}
+                mirrored={true}
+                // screenshotFormat='image/jpeg'
                 videoConstraints={{
                   facingMode: 'user'
                 }}

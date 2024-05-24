@@ -15,6 +15,7 @@ export default function SignToText(props: SignToTextProps) {
   const [capturing, setCapturing] = useState<boolean>(false)
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([])
   const [uploading, setUploading] = useState<boolean>(false)
+  const [predictSign, setPredictSign] = useState<string>('')
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true)
@@ -55,7 +56,7 @@ export default function SignToText(props: SignToTextProps) {
       if (response.ok) {
         console.log('Video uploaded successfully')
         const result = await response.json()
-        console.log(result.data)
+        setPredictSign(result.data)
         setRecordedChunks([])
       } else {
         console.error('Failed to upload video')
@@ -86,7 +87,7 @@ export default function SignToText(props: SignToTextProps) {
         <LanguageList isRevert={isRevert} />
       </Suspense>
       <Suspense>
-        <Content isRevert={isRevert} webcamRef={webcamRef} />
+        <Content isRevert={isRevert} webcamRef={webcamRef} predictSign={predictSign} />
       </Suspense>
     </Box>
   )

@@ -29,7 +29,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
   const { audioTracks } = useRemoteAudioTracks(remoteUsers)
   const [ws, setWs] = useState<WebSocket | null>(null)
   const [query, setQuery] = useState('')
-
+  const [predictSign, setPredictSign] = useState('')
   // Webcam and Media Recorder refs and state
   const webcamRef = useRef<Webcam>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -46,7 +46,11 @@ export default function Videos(props: { channelName: string; AppID: string }) {
 
     socket.onmessage = function (event) {
       console.log('query: ', event.data)
-      if (userType === 'dd') setQuery(encodeURIComponent(event.data))
+      const data = JSON.parse(event.data)
+      console.log(userType, data.userType)
+      if (data.userType === 'normal' && userType === 'dd') {
+        setQuery(encodeURIComponent(data.data))
+      } else if (data.userType === 'dd' && userType === 'normal') setPredictSign(data.data)
     }
   }, [channelName])
 
@@ -81,39 +85,47 @@ export default function Videos(props: { channelName: string; AppID: string }) {
     }
   }, [mediaRecorderRef, setCapturing])
 
+  const uploadVideo = async (path: string) => {
+    try {
+      setUploading(true)
+      const filename = 'audio.webm'
+      const blob = new Blob(recordedChunks, {
+        type: 'video/webm'
+      })
+      const formData = new FormData()
+      formData.append('video', blob, filename)
+
+      const response = await fetch(`https://192.168.1.44:8000/${path}`, {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Result:', result)
+        ws?.send(JSON.stringify(result))
+        console.log('Video uploaded successfully')
+        setUploadComplete(true)
+      } else {
+        console.error('Failed to upload video')
+      }
+    } catch (error) {
+      console.error('Error uploading video:', error)
+    } finally {
+      setUploading(false)
+      setRecordedChunks([])
+      setCapturing(false) // Reset capturing state here
+      setUploadComplete(false) // Reset uploadComplete state here
+    }
+  }
+
   const handleUpload = useCallback(async () => {
     console.log(recordedChunks)
     if (recordedChunks.length) {
-      try {
-        setUploading(true)
-        const filename = 'audio.webm'
-        const blob = new Blob(recordedChunks, {
-          type: 'video/webm'
-        })
-        const formData = new FormData()
-        formData.append('video', blob, filename)
-
-        const response = await fetch('https://192.168.1.44:8000/audioToText', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (response.ok) {
-          const result = await response.json()
-          console.log('Result:', result)
-          if (result.text) ws?.send(result.text)
-          console.log('Video uploaded successfully')
-          setUploadComplete(true)
-        } else {
-          console.error('Failed to upload video')
-        }
-      } catch (error) {
-        console.error('Error uploading video:', error)
-      } finally {
-        setUploading(false)
-        setRecordedChunks([])
-        setCapturing(false) // Reset capturing state here
-        setUploadComplete(false) // Reset uploadComplete state here
+      if (userType === 'dd') {
+        uploadVideo('translate/upload')
+      } else {
+        uploadVideo('audioToText')
       }
     }
   }, [recordedChunks])
@@ -154,13 +166,13 @@ export default function Videos(props: { channelName: string; AppID: string }) {
             playAudio={micOn}
             playVideo={cameraOn}
           />
-          <Suspense>
-            {userType === 'normal' && <Typography className={styles.caption}>helaos jdfojasdo ifjsaod</Typography>}
-          </Suspense>
         </Card>
         {remoteUsers.map(user => (
           <Box key={user.uid} sx={{ width: '100%', height: '100%' }}>
             <RemoteUser user={user} />
+            <Suspense>
+              {userType === 'normal' && <Typography className={styles.caption}>{predictSign}</Typography>}
+            </Suspense>
           </Box>
         ))}
       </Card>

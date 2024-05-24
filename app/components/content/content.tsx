@@ -48,10 +48,11 @@ const translateText = async (text: string, from: string, to: string) => {
 
 export interface ContentProps {
   isRevert: boolean
+  predictSign?: string
   webcamRef?: React.MutableRefObject<Webcam | null> | ((instance: Webcam | null) => void) | null | undefined
 }
 
-export default function Content({ isRevert, webcamRef }: ContentProps) {
+export default function Content({ isRevert, predictSign, webcamRef }: ContentProps) {
   const router = useRouter()
   const params = useSearchParams()
   let langParam = params.get('lang')
@@ -181,10 +182,10 @@ export default function Content({ isRevert, webcamRef }: ContentProps) {
             flexWrap: 'wrap'
           }}
         >
-          {isRevert && (
+          {isRevert && predictSign && (
             <>
-              <Typography sx={{ width: '100%', p: 1 }}>What do you do</Typography>
-              <TextToAudio text={'What do you do'} />
+              <Typography sx={{ width: '100%', p: 1 }}>{predictSign}</Typography>
+              <TextToAudio text={predictSign} />
             </>
           )}
           {imgSrc && <Image className={styles.imgResult} src={imgSrc!} fill={true} alt='Picture of the author' />}

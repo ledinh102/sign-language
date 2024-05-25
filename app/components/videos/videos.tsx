@@ -220,8 +220,8 @@ export default function Videos(props: { channelName: string; AppID: string }) {
           )}
           {!capturing && recordedChunks.length > 0 && !uploadComplete && (
             <Tooltip title='Upload Recorded Video'>
-              <Button variant='contained' color='success' onClick={handleUpload}>
-                Upload Capture
+              <Button variant='contained' color='success' onClick={handleUpload} disabled={uploading}>
+                {uploading ? 'Uploading...' : 'Upload'}
               </Button>
             </Tooltip>
           )}

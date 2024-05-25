@@ -16,13 +16,13 @@ export default function ConversationPage({ params }: ConversationPageProps) {
   const [conversation, setConversation] = useState<ConversationCustom>()
 
   const getMessages = async (conversationId: string) => {
-    const response = await fetch(`https://172.25.41.23:8000/${conversationId}/messages`)
+    const response = await fetch(`https://192.168.31.16:8000/${conversationId}/messages`)
     const messages: Message[] = await response.json()
     setMessages(messages)
   }
 
   const getConversation = async (conversationId: string) => {
-    const response = await fetch(`https://172.25.41.23:8000/conversations/${conversationId}`)
+    const response = await fetch(`https://192.168.31.16:8000/conversations/${conversationId}`)
     const conversation: ConversationCustom = await response.json()
     setConversation(conversation)
   }

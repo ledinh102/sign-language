@@ -59,7 +59,7 @@ export default function VideoCall() {
     }`
     if (email) {
       try {
-        const sendEmail = await fetch('https://172.25.41.23:8000/send-email', {
+        const sendEmail = await fetch('https://192.168.31.16:8000/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ toEmail: email, url: inviteLink })

@@ -33,7 +33,7 @@ export default function MessageList({ userId, conversation, getMessages, message
       conversationId: conversation?.id,
       senderId: userId
     }
-    const response = await fetch('https://172.25.41.23:8000/messages', {
+    const response = await fetch('https://192.168.31.16:8000/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -48,7 +48,7 @@ export default function MessageList({ userId, conversation, getMessages, message
 
   useEffect(() => {
     if (userId) {
-      const socket = new WebSocket(`wss://172.25.41.23:8000/chat/${userId}`)
+      const socket = new WebSocket(`wss://192.168.31.16:8000/chat/${userId}`)
       setWs(socket)
 
       socket.onmessage = event => {

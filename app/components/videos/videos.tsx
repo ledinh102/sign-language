@@ -41,7 +41,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
   // Establish websocket connection
   useEffect(() => {
     const clientID = Date.now()
-    const socket = new WebSocket(`wss://192.168.1.44:8000/video-call/${clientID}/${userType}`)
+    const socket = new WebSocket(`wss://172.25.41.23:8000/video-call/${clientID}/${userType}`)
     setWs(socket)
 
     socket.onmessage = function (event) {
@@ -95,7 +95,7 @@ export default function Videos(props: { channelName: string; AppID: string }) {
       const formData = new FormData()
       formData.append('video', blob, filename)
 
-      const response = await fetch(`https://192.168.1.44:8000/${path}`, {
+      const response = await fetch(`https://172.25.41.23:8000/${path}`, {
         method: 'POST',
         body: formData
       })

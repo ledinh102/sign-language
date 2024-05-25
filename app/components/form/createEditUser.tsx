@@ -69,7 +69,7 @@ export default function CreateEditUserForm({
   const getUserInfo = async () => {
     if (userId) {
       try {
-        const response = await fetch(`https://192.168.1.44:8000/users/id/${userId}`)
+        const response = await fetch(`https://172.25.41.23:8000/users/id/${userId}`)
         const userInfo: User = await response.json()
         console.log('Fetched user info:', userId, userInfo)
         setUserInfo(userInfo)

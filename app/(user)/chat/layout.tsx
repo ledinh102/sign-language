@@ -18,7 +18,7 @@ export default function LayoutChat({ children }: { children: ReactNode }) {
   const getConversationList = async (userId: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`https://192.168.1.44:8000/${userId}/conversations`)
+      const response = await fetch(`https://172.25.41.23:8000/${userId}/conversations`)
       const conversationList: ConversationCustom[] = await response.json()
       if (conversationList.length > 0 && params.conversationId === undefined) {
         router.push('/chat/' + conversationList[0].id)

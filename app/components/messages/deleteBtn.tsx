@@ -9,7 +9,7 @@ export interface DeleteBtnProps {
 
 export default function DeleteBtn({ messageId, ws }: DeleteBtnProps) {
   const deleteMessage = async (messageId: string) => {
-    const response = await fetch(`https://192.168.1.44:8000/messages/${messageId}`, {
+    const response = await fetch(`https://172.25.41.23:8000/messages/${messageId}`, {
       method: 'DELETE'
     })
     const deletedMessage = await response.json()

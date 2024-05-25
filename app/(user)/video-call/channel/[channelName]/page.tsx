@@ -6,8 +6,8 @@ import { redirect } from 'next/navigation'
 
 export default function Page({ params }: { params: { channelName: string } }) {
   const { data: session, status } = useSession()
-  if (status === 'loading') return <LinearProgressCustom />
-  else if (status === 'unauthenticated') redirect(`/auth/sign-in?callbackUrl=/video-call/channel/${params.channelName}`)
+  // if (status === 'loading') return <LinearProgressCustom />
+  // else if (status === 'unauthenticated') redirect(`/auth/sign-in?callbackUrl=/video-call/channel/${params.channelName}`)
 
   return <Call appId={process.env.NEXT_PUBLIC_AGORA_APP_ID!} channelName={params.channelName} />
 }

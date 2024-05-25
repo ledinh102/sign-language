@@ -94,9 +94,9 @@ export default function VideoCall() {
     return <LinearProgressCustom />
   }
 
-  if (status === 'unauthenticated') {
-    return redirect('/auth/sign-in?callbackUrl=' + encodeURIComponent(window.location.origin + '/video-call'))
-  }
+  // if (status === 'unauthenticated') {
+  //   return redirect('/auth/sign-in?callbackUrl=' + encodeURIComponent(window.location.origin + '/video-call'))
+  // }
 
   return (
     <Stack justifyContent='center' alignItems='center' spacing={2} height='80vh'>
